@@ -1,41 +1,37 @@
-// Configuración de IPs (Ajustaremos esto para HTTPS después)
-const HOST = "3.213.133.17:8000";
-const API_BASE = `http://${HOST}/api`;
+import { CONFIG } from './config.js';
 
-// 1. Módulo para ejecutar movimientos individuales
-export async function enviarComando(vehiculoId, comandoId) {
+export async function enviarComandoRest(comandoId) {
     try {
-        const resp = await fetch(`${API_BASE}/vehiculos/${vehiculoId}/movimiento`, {
+        const res = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/movimiento`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_comando: comandoId, origen: 'WEB' })
+            body: JSON.stringify({ id_comando: comandoId, origen: 'Botonera Web' })
         });
-        return resp.ok;
+        if (!res.ok) {
+            const data = await res.json();
+            return { ok: false, error: data.detail || res.status };
+        }
+        return { ok: true };
     } catch (e) {
-        console.error("Error enviando comando REST:", e);
-        return false;
+        return { ok: false, error: e.message };
     }
 }
 
-// 2. Módulo para consultar las Demos
-export async function obtenerDemos(vehiculoId) {
+export async function obtenerDemos() {
     try {
-        const resp = await fetch(`${API_BASE}/vehiculos/${vehiculoId}/demos`);
-        if (!resp.ok) throw new Error("Fallo al obtener demos");
+        const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demos`);
+        if (!resp.ok) return [];
         return await resp.json();
-    } catch (e) {
-        console.error("Error Demos:", e);
-        return [];
+    } catch (e) { 
+        return []; 
     }
 }
 
-// 3. Módulo para comprobar salud de la API (Indicador AWS)
-export async function checkApiHealth(vehiculoId) {
+export async function checkApiHealth() {
     try {
-        // Hacemos un ping ligero obteniendo el estado para verificar que AWS está vivo
-        const resp = await fetch(`${API_BASE}/vehiculos/${vehiculoId}/estado`);
+        const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/estado`);
         return resp.ok;
-    } catch (e) {
-        return false;
+    } catch (e) { 
+        return false; 
     }
 }

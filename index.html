@@ -1,86 +1,101 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Excavadora IoT</title>
-    <!-- Favicon (Asegúrate de tener un icono llamado favicon.ico en tu carpeta) -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- Bootstrap 5 (Requisito de la rúbrica) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de Control - Excavadora IoT</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Panel de Indicadores de Estado -->
-    <div class="status-bar d-flex justify-content-around flex-wrap p-2 text-white bg-dark">
-        <div class="indicator">
-            <span id="ind-ws" class="badge bg-secondary">Desconectado</span>
-            <small>WebSocket WSS</small>
-        </div>
-        <div class="indicator">
-            <span id="ind-api" class="badge bg-secondary">Comprobando</span>
-            <small>API AWS (21 Servicios)</small>
-        </div>
-        <div class="indicator">
-            <span id="ind-rds" class="badge bg-secondary">Sin verificar</span>
-            <small>Amazon RDS</small>
-        </div>
-    </div>
 
-    <main class="container my-4">
+<header>
+    <h1>EXCAVADORA IOT</h1>
+    <div class="status-indicator">
+        <div class="led-box"><span class="led-label">WSS</span><span id="led-ws" class="dot sim" title="WebSocket"></span></div>
+        <div class="led-box"><span class="led-label">API</span><span id="led-api" class="dot sim" title="Servicios AWS"></span></div>
+        <div class="led-box"><span class="led-label">RDS</span><span id="led-rds" class="dot sim" title="Base de Datos"></span></div>
+    </div>
+</header>
+
+<main class="dashboard">
+    
+    <!-- COLUMNA IZQUIERDA: HISTORIAL Y DEMOS -->
+    <aside class="sidebar">
+        <!-- Panel de Historial -->
+        <div class="panel panel-half">
+            <h3>HISTORIAL EN VIVO</h3>
+            <ul id="historyList"></ul>
+        </div>
+
+        <!-- Panel de Demos (Solo lectura) -->
+        <div class="panel panel-half">
+            <h3>CATÁLOGO DE DEMOS</h3>
+            <div class="demo-builder">
+                <select id="demoSelect" class="demo-select">
+                    <option value="">Cargando demos...</option>
+                </select>
+                
+                <div class="demo-controls">
+                    <button class="btn btn-play" id="btn-run-demo">▶ EJECUTAR</button>
+                    <button class="btn btn-clear" id="btn-cancel-demo">⏹ CANCELAR</button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- COLUMNA DERECHA: EL CONTROL REMOTO GIGANTE -->
+    <section class="main-control-area">
         <div class="remote-body">
-            <div class="top-plate text-center mb-4">TRUCK CONTROL</div>
             
-            <div class="row align-items-center">
-                <!-- Joystick Izquierdo (Orugas) -->
-                <div class="col-md-4 text-center">
-                    <h5 class="text-white">ORUGAS</h5>
-                    <div class="d-pad-ring mx-auto" id="joyLeftWrap">
-                        <div class="d-pad-hole"></div>
+            <div class="top-plate">TRUCK CONTROL</div>
+
+            <div class="control-grid">
+                
+                <!-- JOYSTICK IZQUIERDO -->
+                <div class="joy-wrap">
+                    <div class="joy-label">ORUGAS</div>
+                    <div class="d-pad-ring">
+                        <div class="dir-hint up"><b>▲</b>Fwd</div>
+                        <div class="dir-hint down">Rev<b>▼</b></div>
+                        <div class="dir-hint left"><b>◀</b>Izq</div>
+                        <div class="dir-hint right">Der<b>▶</b></div>
                         <div class="joy-stick" id="joyLeft"></div>
                     </div>
                 </div>
 
-                <!-- Panel Central (Botones Extras y Demos) -->
-                <div class="col-md-4 text-center center-panel">
-                    <button id="btn-7" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">💡 LUCES</button>
-                    <button id="btn-5" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">🔊 SONIDO</button>
-                    <button id="btn-8" class="btn btn-warning w-100 mb-4 font-monospace fw-bold">⚙️ AUX</button>
-
-                    <div class="demo-section p-3 bg-dark rounded border border-secondary">
-                        <h6 class="text-warning">Catálogo de DEMOS</h6>
-                        <select id="demoSelect" class="form-select mb-2 font-monospace">
-                            <option value="">Cargando demos...</option>
-                        </select>
-                        <div class="d-flex gap-2">
-                            <button id="btn-run-demo" class="btn btn-success w-50">▶ Ejecutar</button>
-                            <button id="btn-cancel-demo" class="btn btn-danger w-50">⏹ Cancelar</button>
-                        </div>
-                    </div>
+                <!-- BOTONES CENTRALES -->
+                <div class="center-panel">
+                    <button id="btn-7" class="btn-center">💡 LUCES (7)</button>
+                    <button id="btn-5" class="btn-center">🔊 SONIDO (5)</button>
+                    <button id="btn-8" class="btn-center">✨ AUX (8)</button>
                 </div>
 
-                <!-- Joystick Derecho (Brazo) -->
-                <div class="col-md-4 text-center">
-                    <h5 class="text-white">CABINA / BRAZO</h5>
-                    <div class="d-pad-ring mx-auto" id="joyRightWrap">
-                        <div class="d-pad-hole"></div>
+                <!-- JOYSTICK DERECHO -->
+                <div class="joy-wrap">
+                    <div class="joy-label">CABINA / BRAZO</div>
+                    <div class="d-pad-ring">
+                        <div class="dir-hint up"><b>▲</b>Sube</div>
+                        <div class="dir-hint down">Baja<b>▼</b></div>
+                        <div class="dir-hint left"><b>◀</b>C.Izq</div>
+                        <div class="dir-hint right">C.Der<b>▶</b></div>
                         <div class="joy-stick" id="joyRight"></div>
                     </div>
                 </div>
+
             </div>
 
-            <!-- Botón Detener Prioritario -->
-            <div class="bottom-plate text-center mt-4">
-                <button id="btn-13" class="btn btn-danger btn-lg w-75 fw-bold fs-4">⏹ DETENER TODO (13)</button>
+            <div class="bottom-plate">
+                <button id="btn-stop">⏹ DETENER TODO (13)</button>
             </div>
+
         </div>
-    </main>
+    </section>
 
-    <footer class="text-center text-white pb-3 credits">
-        <small>Desarrollado por Erick Brachiel Silva Barriga · 2026</small>
-    </footer>
+</main>
 
-    <!-- Aquí importamos la lógica modular nativa de JS -->
-    <script type="module" src="main.js"></script>
+<div class="bottom-footer">Desarrollado por Silva Barriga Erick Brachiel · 2026</div>
+
+<script type="module" src="main.js"></script>
 </body>
 </html>

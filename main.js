@@ -1,137 +1,178 @@
-// Importamos funciones del módulo API
-import { enviarComando, obtenerDemos, checkApiHealth } from './api.js';
+import { CONFIG } from './config.js';
+import { enviarComandoRest, obtenerDemos, checkApiHealth } from './api.js';
 
-const VEHICULO_ID = 1;
-const WS_URL = "ws://3.213.133.17:8000/ws";
+const wsDot = document.getElementById("led-ws");
+const apiDot = document.getElementById("led-api");
+const rdsDot = document.getElementById("led-rds");
+const historyList = document.getElementById("historyList");
 
-// Referencias a los indicadores
-const indWs = document.getElementById('ind-ws');
-const indApi = document.getElementById('ind-api');
-const indRds = document.getElementById('ind-rds');
+let ws;
+let lastCommand = 13;
+
+const nombresAcciones = {
+    1: "GIRANDO IZQUIERDA", 2: "AVANZANDO", 3: "RETROCEDIENDO", 4: "GIRANDO DERECHA",
+    5: "SONIDO ON/OFF", 7: "LUCES ON/OFF", 8: "MODO AUX",
+    9: "CABINA IZQUIERDA", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "CABINA DERECHA", 13: "DETENIDO"
+};
 
 // ==========================================
-// 1. GESTIÓN DEL WEBSOCKET (Indicador 1)
+// 1. HISTORIAL
 // ==========================================
-let ws = null;
-function conectarWebSocket() {
-    indWs.className = "badge bg-warning text-dark";
-    indWs.innerText = "Conectando...";
-    
-    ws = new WebSocket(WS_URL);
-    
-    ws.onopen = () => {
-        indWs.className = "badge bg-success";
-        indWs.innerText = "En línea";
-    };
-    
-    ws.onclose = () => {
-        indWs.className = "badge bg-danger";
-        indWs.innerText = "Desconectado";
-        setTimeout(conectarWebSocket, 5000); // Intento de reconexión
-    };
-    
-    ws.onmessage = (event) => {
-        console.log("Evento WS recibido:", event.data);
-    };
+function agregarAlHistorial(texto) {
+    const li = document.createElement("li");
+    const timeStr = new Date().toTimeString().split(' ')[0];
+    li.innerHTML = `[${timeStr}] <b>${texto}</b>`;
+    historyList.prepend(li);
+    if (historyList.children.length > 25) historyList.removeChild(historyList.lastChild);
 }
-conectarWebSocket();
 
 // ==========================================
-// 2. MONITOREO DE SALUD API Y RDS (Indicadores 2 y 3)
+// 2. CONEXIÓN WEBSOCKET Y SALUD API
 // ==========================================
+function iniciarWebSocket() {
+    wsDot.className = "dot sim"; // Amarillo (Conectando)
+    try {
+        ws = new WebSocket(CONFIG.WS_URL);
+        ws.onopen = () => { wsDot.className = "dot on"; }; // Verde
+        ws.onclose = () => {
+            wsDot.className = "dot err"; // Rojo
+            setTimeout(iniciarWebSocket, 5000);
+        };
+        ws.onerror = () => { wsDot.className = "dot err"; };
+    } catch (e) { wsDot.className = "dot err"; }
+}
+
 async function monitorearSalud() {
-    const apiViva = await checkApiHealth(VEHICULO_ID);
-    
+    apiDot.className = "dot sim";
+    rdsDot.className = "dot sim";
+    const apiViva = await checkApiHealth();
     if (apiViva) {
-        indApi.className = "badge bg-success"; indApi.innerText = "Disponible";
-        // Si la API responde, asumimos RDS disponible por ahora según reglas
-        indRds.className = "badge bg-success"; indRds.innerText = "Disponible"; 
+        apiDot.className = "dot on";
+        rdsDot.className = "dot on"; // RDS viva si API responde
     } else {
-        indApi.className = "badge bg-danger"; indApi.innerText = "No disponible";
-        indRds.className = "badge bg-secondary"; indRds.innerText = "Sin verificar";
+        apiDot.className = "dot err";
+        rdsDot.className = "dot err";
     }
 }
-setInterval(monitorearSalud, 10000); // Chequea cada 10 segundos
-monitorearSalud();
 
 // ==========================================
-// 3. CARGAR CATÁLOGO DE DEMOS
+// 3. ENVÍO DE COMANDOS
+// ==========================================
+async function procesarComando(cmdId) {
+    if(cmdId !== 13 && cmdId === lastCommand) return;
+    lastCommand = cmdId;
+
+    const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
+    agregarAlHistorial(nombreComando);
+
+    // 1. Envío WebSocket (Inmediato)
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ status: cmdId }));
+    }
+
+    // 2. Envío REST
+    const result = await enviarComandoRest(cmdId);
+    if (!result.ok) {
+        agregarAlHistorial(`<span style="color: #e74c3c;">[INFO DB] ${result.error}</span>`);
+    }
+}
+
+// Enlazar Botones Centrales
+document.getElementById('btn-7').addEventListener('click', function() { procesarComando(7); this.classList.toggle('active-toggle'); });
+document.getElementById('btn-5').addEventListener('click', function() { procesarComando(5); this.classList.toggle('active-toggle'); });
+document.getElementById('btn-8').addEventListener('click', () => procesarComando(8));
+document.getElementById('btn-stop').addEventListener('click', () => procesarComando(13));
+
+// ==========================================
+// 4. CATÁLOGO DE DEMOS
 // ==========================================
 async function cargarDemos() {
     const select = document.getElementById('demoSelect');
-    const demos = await obtenerDemos(VEHICULO_ID);
-    
+    const demos = await obtenerDemos();
     select.innerHTML = '<option value="">Seleccione una DEMO...</option>';
     demos.forEach(d => {
         select.innerHTML += `<option value="${d.id_demo}">${d.nombre}</option>`;
     });
 }
-cargarDemos();
 
 // ==========================================
-// 4. LÓGICA DE BOTONES Y JOYSTICKS
+// 5. LÓGICA DE LOS JOYSTICKS
 // ==========================================
-document.getElementById('btn-13').addEventListener('click', () => enviarComando(VEHICULO_ID, 13));
-document.getElementById('btn-7').addEventListener('click', () => enviarComando(VEHICULO_ID, 7));
-document.getElementById('btn-5').addEventListener('click', () => enviarComando(VEHICULO_ID, 5));
-document.getElementById('btn-8').addEventListener('click', () => enviarComando(VEHICULO_ID, 8));
+function setupJoystick(joystickId, mapConfig) {
+    const stick = document.getElementById(joystickId);
+    const maxDist = 50; 
+    let isDragging = false;
+    let activeCommand = 13;
 
-// Lógica base para joysticks táctiles/mouse
-function configurarJoystick(elementId, mapeoComandos) {
-    const stick = document.getElementById(elementId);
-    let active = false;
-    let currentCmd = 13; // Detenido
+    function onStart(e) {
+        isDragging = true;
+        stick.style.transition = "none";
+    }
 
-    const startDrag = () => active = true;
-    const endDrag = () => {
-        active = false;
-        stick.style.transform = `translate(-50%, -50%)`;
-        if (currentCmd !== 13) {
-            currentCmd = 13;
-            enviarComando(VEHICULO_ID, 13); // Comando prioritario al soltar
-        }
-    };
+    function onMove(e) {
+        if (!isDragging) return;
+        e.preventDefault(); 
 
-    const drag = (e) => {
-        if (!active) return;
-        e.preventDefault();
-        
         const rect = stick.parentElement.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
         
-        let x = clientX - rect.left - (rect.width/2);
-        let y = clientY - rect.top - (rect.height/2);
-        
-        // Limitar radio del joystick
-        const r = 50; 
-        const dist = Math.sqrt(x*x + y*y);
-        if (dist > r) { x = (x/dist)*r; y = (y/dist)*r; }
-        
-        stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
 
-        // Determinar cuadrante para enviar comando
-        let newCmd = 13;
-        if (y < -20) newCmd = mapeoComandos.up;
-        else if (y > 20) newCmd = mapeoComandos.down;
-        else if (x < -20) newCmd = mapeoComandos.left;
-        else if (x > 20) newCmd = mapeoComandos.right;
-
-        if (newCmd !== currentCmd && newCmd !== 13) {
-            currentCmd = newCmd;
-            enviarComando(VEHICULO_ID, currentCmd);
+        let dx = clientX - centerX;
+        let dy = clientY - centerY;
+        
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > maxDist) {
+            dx = (dx / distance) * maxDist;
+            dy = (dy / distance) * maxDist;
         }
-    };
 
-    stick.addEventListener('mousedown', startDrag);
-    window.addEventListener('mouseup', endDrag);
-    window.addEventListener('mousemove', drag);
+        stick.style.transform = `translate(${dx}px, ${dy}px)`;
+
+        let newCommand = 13;
+        if (distance > 25) { 
+            if (Math.abs(dx) > Math.abs(dy)) {
+                newCommand = dx > 0 ? mapConfig.right : mapConfig.left;
+            } else {
+                newCommand = dy > 0 ? mapConfig.down : mapConfig.up;
+            }
+        }
+
+        if(newCommand !== activeCommand) {
+            activeCommand = newCommand;
+            if(activeCommand !== 13) procesarComando(activeCommand);
+        }
+    }
+
+    function onEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        stick.style.transition = "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+        stick.style.transform = `translate(0px, 0px)`;
+        
+        activeCommand = 13;
+        procesarComando(13); 
+    }
+
+    stick.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
     
-    stick.addEventListener('touchstart', startDrag, {passive: false});
-    window.addEventListener('touchend', endDrag);
-    window.addEventListener('touchmove', drag, {passive: false});
+    stick.addEventListener('touchstart', onStart, {passive: false});
+    window.addEventListener('touchmove', onMove, {passive: false});
+    window.addEventListener('touchend', onEnd);
 }
 
-// Inicializar joysticks con tus reglas invertidas/corregidas
-configurarJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
-configurarJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });
+// Configuración original preservada
+setupJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
+setupJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });
+
+window.onload = () => {
+    iniciarWebSocket();
+    monitorearSalud();
+    setInterval(monitorearSalud, 10000);
+    cargarDemos();
+    agregarAlHistorial("INTERFAZ CARGADA");
+};
