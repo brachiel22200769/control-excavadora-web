@@ -64,21 +64,26 @@ async function enviarComando(cmdId) {
     lastCommand = cmdId;
 
     const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
-    agregarAlHistorial(nombreComando);
+    
+    // 1. Evidencia de que el usuario lo movió en la UI
+    agregarAlHistorial(`Solicitado: ${nombreComando}`);
 
     if (modoSimulado) return;
 
-    // WebSocket Directo
+    // WebSocket Directo (opcional según tu lógica)
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ status: cmdId }));
     }
 
-    // Petición REST
+    // 2. Evidencia de que el servidor FastAPI respondió 200 OK
     const res = await enviarComandoRest(cmdId);
     if (!res.ok) {
-        agregarAlHistorial(`<span style="color: #e74c3c;">[INFO DB] ${res.error}</span>`);
+        agregarAlHistorial(`<span style="color: #e74c3c;">[ERROR API] ${res.error}</span>`);
+    } else {
+        agregarAlHistorial(`<span style="color: #3498db;">[API] Comando Aceptado</span>`);
     }
 }
+
 
 function agregarAlHistorial(texto) {
     const li = document.createElement("li");
