@@ -1,57 +1,66 @@
-import { CONFIG } from './config.js';
+// Importamos funciones del módulo API
 import { enviarComando, obtenerDemos, checkApiHealth } from './api.js';
 
-const ledWs = document.getElementById('led-ws');
-const ledApi = document.getElementById('led-api');
-const ledRds = document.getElementById('led-rds');
-const historialBox = document.getElementById('historial');
+const VEHICULO_ID = 1;
+const WS_URL = "ws://3.213.133.17:8000/ws";
 
-// Helper para agregar texto al Historial de la UI
-function logHistorial(mensaje) {
-    const time = new Date().toLocaleTimeString('es-MX', { hour12: false });
-    const div = document.createElement('div');
-    div.className = 'history-item';
-    div.innerHTML = `<span class="history-time">[${time}]</span> <span class="history-cmd">${mensaje}</span>`;
-    historialBox.prepend(div);
-}
+// Referencias a los indicadores
+const indWs = document.getElementById('ind-ws');
+const indApi = document.getElementById('ind-api');
+const indRds = document.getElementById('ind-rds');
 
-// 1. WebSocket (Control de LED)
+// ==========================================
+// 1. GESTIÓN DEL WEBSOCKET (Indicador 1)
+// ==========================================
+let ws = null;
 function conectarWebSocket() {
-    ledWs.className = "led led-yellow"; 
-    const ws = new WebSocket(CONFIG.WS_URL);
+    indWs.className = "badge bg-warning text-dark";
+    indWs.innerText = "Conectando...";
     
-    ws.onopen = () => { ledWs.className = "led led-green"; };
-    ws.onclose = () => {
-        ledWs.className = "led led-red";
-        setTimeout(conectarWebSocket, 5000);
+    ws = new WebSocket(WS_URL);
+    
+    ws.onopen = () => {
+        indWs.className = "badge bg-success";
+        indWs.innerText = "En línea";
     };
+    
+    ws.onclose = () => {
+        indWs.className = "badge bg-danger";
+        indWs.innerText = "Desconectado";
+        setTimeout(conectarWebSocket, 5000); // Intento de reconexión
+    };
+    
     ws.onmessage = (event) => {
-        logHistorial(`WS: ${event.data.substring(0, 15)}`);
+        console.log("Evento WS recibido:", event.data);
     };
 }
 conectarWebSocket();
 
-// 2. Monitoreo API y RDS (Control de LEDs)
+// ==========================================
+// 2. MONITOREO DE SALUD API Y RDS (Indicadores 2 y 3)
+// ==========================================
 async function monitorearSalud() {
-    ledApi.className = "led led-yellow";
-    ledRds.className = "led led-yellow";
+    const apiViva = await checkApiHealth(VEHICULO_ID);
     
-    const apiViva = await checkApiHealth();
     if (apiViva) {
-        ledApi.className = "led led-green";
-        ledRds.className = "led led-green"; 
+        indApi.className = "badge bg-success"; indApi.innerText = "Disponible";
+        // Si la API responde, asumimos RDS disponible por ahora según reglas
+        indRds.className = "badge bg-success"; indRds.innerText = "Disponible"; 
     } else {
-        ledApi.className = "led led-red";
-        ledRds.className = "led led-red";
+        indApi.className = "badge bg-danger"; indApi.innerText = "No disponible";
+        indRds.className = "badge bg-secondary"; indRds.innerText = "Sin verificar";
     }
 }
-setInterval(monitorearSalud, 10000);
+setInterval(monitorearSalud, 10000); // Chequea cada 10 segundos
 monitorearSalud();
 
-// 3. Catálogo de Demos
+// ==========================================
+// 3. CARGAR CATÁLOGO DE DEMOS
+// ==========================================
 async function cargarDemos() {
     const select = document.getElementById('demoSelect');
-    const demos = await obtenerDemos();
+    const demos = await obtenerDemos(VEHICULO_ID);
+    
     select.innerHTML = '<option value="">Seleccione una DEMO...</option>';
     demos.forEach(d => {
         select.innerHTML += `<option value="${d.id_demo}">${d.nombre}</option>`;
@@ -59,24 +68,19 @@ async function cargarDemos() {
 }
 cargarDemos();
 
-// 4. Controlador de envíos
-async function procesarComando(cmd, nombreCmd) {
-    logHistorial(`Enviando: ${nombreCmd}`);
-    const exito = await enviarComando(cmd);
-    if (!exito) logHistorial(`Error API: ${nombreCmd}`);
-}
+// ==========================================
+// 4. LÓGICA DE BOTONES Y JOYSTICKS
+// ==========================================
+document.getElementById('btn-13').addEventListener('click', () => enviarComando(VEHICULO_ID, 13));
+document.getElementById('btn-7').addEventListener('click', () => enviarComando(VEHICULO_ID, 7));
+document.getElementById('btn-5').addEventListener('click', () => enviarComando(VEHICULO_ID, 5));
+document.getElementById('btn-8').addEventListener('click', () => enviarComando(VEHICULO_ID, 8));
 
-// 5. Botones
-document.getElementById('btn-13').addEventListener('click', () => procesarComando(13, 'DETENER TODO'));
-document.getElementById('btn-7').addEventListener('click', () => procesarComando(7, 'LUCES ON/OFF'));
-document.getElementById('btn-5').addEventListener('click', () => procesarComando(5, 'SONIDO'));
-document.getElementById('btn-8').addEventListener('click', () => procesarComando(8, 'AUX'));
-
-// 6. Joysticks
-function configurarJoystick(elementId, mapeo) {
+// Lógica base para joysticks táctiles/mouse
+function configurarJoystick(elementId, mapeoComandos) {
     const stick = document.getElementById(elementId);
     let active = false;
-    let currentCmd = 13;
+    let currentCmd = 13; // Detenido
 
     const startDrag = () => active = true;
     const endDrag = () => {
@@ -84,7 +88,7 @@ function configurarJoystick(elementId, mapeo) {
         stick.style.transform = `translate(-50%, -50%)`;
         if (currentCmd !== 13) {
             currentCmd = 13;
-            procesarComando(13, 'DETENIDO (Centro)');
+            enviarComando(VEHICULO_ID, 13); // Comando prioritario al soltar
         }
     };
 
@@ -99,22 +103,23 @@ function configurarJoystick(elementId, mapeo) {
         let x = clientX - rect.left - (rect.width/2);
         let y = clientY - rect.top - (rect.height/2);
         
-        const r = 40; 
+        // Limitar radio del joystick
+        const r = 50; 
         const dist = Math.sqrt(x*x + y*y);
         if (dist > r) { x = (x/dist)*r; y = (y/dist)*r; }
         
         stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
 
+        // Determinar cuadrante para enviar comando
         let newCmd = 13;
-        let nombreCmd = 'DETENIDO';
-        if (y < -20) { newCmd = mapeo.up; nombreCmd = 'ARRIBA'; }
-        else if (y > 20) { newCmd = mapeo.down; nombreCmd = 'ABAJO'; }
-        else if (x < -20) { newCmd = mapeo.left; nombreCmd = 'IZQUIERDA'; }
-        else if (x > 20) { newCmd = mapeo.right; nombreCmd = 'DERECHA'; }
+        if (y < -20) newCmd = mapeoComandos.up;
+        else if (y > 20) newCmd = mapeoComandos.down;
+        else if (x < -20) newCmd = mapeoComandos.left;
+        else if (x > 20) newCmd = mapeoComandos.right;
 
         if (newCmd !== currentCmd && newCmd !== 13) {
             currentCmd = newCmd;
-            procesarComando(currentCmd, nombreCmd);
+            enviarComando(VEHICULO_ID, currentCmd);
         }
     };
 
@@ -127,5 +132,6 @@ function configurarJoystick(elementId, mapeo) {
     window.addEventListener('touchmove', drag, {passive: false});
 }
 
+// Inicializar joysticks con tus reglas invertidas/corregidas
 configurarJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
 configurarJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });

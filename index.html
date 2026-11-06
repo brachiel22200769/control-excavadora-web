@@ -4,107 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control Excavadora IoT</title>
+    <!-- Favicon (Asegúrate de tener un icono llamado favicon.ico en tu carpeta) -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Bootstrap 5 (Requisito de la rúbrica) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Barra superior oscura -->
-    <header class="top-bar">
-        <div class="logo">EXCAVADORA IOT</div>
-        <!-- Los 3 LEDs solicitados -->
-        <div class="leds-container">
-            <div class="led-group">
-                <span class="led-label">WSS</span>
-                <div id="led-ws" class="led led-yellow"></div>
-            </div>
-            <div class="led-group">
-                <span class="led-label">API</span>
-                <div id="led-api" class="led led-yellow"></div>
-            </div>
-            <div class="led-group">
-                <span class="led-label">RDS</span>
-                <div id="led-rds" class="led led-yellow"></div>
-            </div>
+    <!-- Panel de Indicadores de Estado -->
+    <div class="status-bar d-flex justify-content-around flex-wrap p-2 text-white bg-dark">
+        <div class="indicator">
+            <span id="ind-ws" class="badge bg-secondary">Desconectado</span>
+            <small>WebSocket WSS</small>
         </div>
-    </header>
-
-    <div class="main-layout">
-        <!-- Columna Izquierda (Paneles oscuros) -->
-        <aside class="left-panels">
-            <!-- Historial -->
-            <div class="dark-panel">
-                <div class="panel-header">HISTORIAL EN VIVO</div>
-                <div class="panel-content history-box" id="historial">
-                    <!-- Aquí se llenarán los eventos -->
-                </div>
-            </div>
-
-            <!-- Catálogo de Demos (Reemplaza al creador) -->
-            <div class="dark-panel">
-                <div class="panel-header">CATÁLOGO DE DEMOS</div>
-                <div class="panel-content demo-box">
-                    <select id="demoSelect" class="demo-select">
-                        <option value="">Cargando demos...</option>
-                    </select>
-                    <div class="demo-buttons">
-                        <button id="btn-run-demo" class="btn-demo btn-play">▶ EJECUTAR DEMO</button>
-                        <button id="btn-cancel-demo" class="btn-demo btn-stop">⏹ CANCELAR</button>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Columna Central (El control principal naranja) -->
-        <main class="center-remote">
-            <div class="remote-body">
-                <div class="remote-header">TRUCK CONTROL</div>
-                
-                <div class="remote-controls">
-                    <!-- Joystick Izquierdo -->
-                    <div class="control-column">
-                        <div class="joystick-label">ORUGAS</div>
-                        <div class="d-pad-ring" id="joyLeftWrap">
-                            <div class="d-pad-hole"></div>
-                            <div class="joy-stick" id="joyLeft"></div>
-                            <!-- Flechas decorativas -->
-                            <div class="arrow up">▲</div><div class="arrow down">▼</div>
-                            <div class="arrow left">◀</div><div class="arrow right">▶</div>
-                        </div>
-                    </div>
-
-                    <!-- Botones Centrales -->
-                    <div class="control-column buttons-column">
-                        <button id="btn-7" class="btn-action">💡 LUCES (7)</button>
-                        <button id="btn-5" class="btn-action">🔊 SONIDO (5)</button>
-                        <button id="btn-8" class="btn-action">⚙️ AUX (8)</button>
-                    </div>
-
-                    <!-- Joystick Derecho -->
-                    <div class="control-column">
-                        <div class="joystick-label">CABINA / BRAZO</div>
-                        <div class="d-pad-ring" id="joyRightWrap">
-                            <div class="d-pad-hole"></div>
-                            <div class="joy-stick" id="joyRight"></div>
-                            <!-- Flechas decorativas -->
-                            <div class="arrow up">▲</div><div class="arrow down">▼</div>
-                            <div class="arrow left">◀</div><div class="arrow right">▶</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botón Detener -->
-                <div class="remote-footer">
-                    <button id="btn-13" class="btn-stop-all">⏹ DETENER TODO (13)</button>
-                </div>
-            </div>
-        </main>
+        <div class="indicator">
+            <span id="ind-api" class="badge bg-secondary">Comprobando</span>
+            <small>API AWS (21 Servicios)</small>
+        </div>
+        <div class="indicator">
+            <span id="ind-rds" class="badge bg-secondary">Sin verificar</span>
+            <small>Amazon RDS</small>
+        </div>
     </div>
 
-    <!-- Footer con tu nombre -->
-    <footer class="bottom-footer">
-        Desarrollado por Silva Barriga Erick Brachiel · 2026
+    <main class="container my-4">
+        <div class="remote-body">
+            <div class="top-plate text-center mb-4">TRUCK CONTROL</div>
+            
+            <div class="row align-items-center">
+                <!-- Joystick Izquierdo (Orugas) -->
+                <div class="col-md-4 text-center">
+                    <h5 class="text-white">ORUGAS</h5>
+                    <div class="d-pad-ring mx-auto" id="joyLeftWrap">
+                        <div class="d-pad-hole"></div>
+                        <div class="joy-stick" id="joyLeft"></div>
+                    </div>
+                </div>
+
+                <!-- Panel Central (Botones Extras y Demos) -->
+                <div class="col-md-4 text-center center-panel">
+                    <button id="btn-7" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">💡 LUCES</button>
+                    <button id="btn-5" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">🔊 SONIDO</button>
+                    <button id="btn-8" class="btn btn-warning w-100 mb-4 font-monospace fw-bold">⚙️ AUX</button>
+
+                    <div class="demo-section p-3 bg-dark rounded border border-secondary">
+                        <h6 class="text-warning">Catálogo de DEMOS</h6>
+                        <select id="demoSelect" class="form-select mb-2 font-monospace">
+                            <option value="">Cargando demos...</option>
+                        </select>
+                        <div class="d-flex gap-2">
+                            <button id="btn-run-demo" class="btn btn-success w-50">▶ Ejecutar</button>
+                            <button id="btn-cancel-demo" class="btn btn-danger w-50">⏹ Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Joystick Derecho (Brazo) -->
+                <div class="col-md-4 text-center">
+                    <h5 class="text-white">CABINA / BRAZO</h5>
+                    <div class="d-pad-ring mx-auto" id="joyRightWrap">
+                        <div class="d-pad-hole"></div>
+                        <div class="joy-stick" id="joyRight"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Detener Prioritario -->
+            <div class="bottom-plate text-center mt-4">
+                <button id="btn-13" class="btn btn-danger btn-lg w-75 fw-bold fs-4">⏹ DETENER TODO (13)</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-white pb-3 credits">
+        <small>Desarrollado por Erick Brachiel Silva Barriga · 2026</small>
     </footer>
 
+    <!-- Aquí importamos la lógica modular nativa de JS -->
     <script type="module" src="main.js"></script>
 </body>
 </html>
