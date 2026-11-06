@@ -5,81 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control Excavadora IoT</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Panel de LEDs en la esquina superior derecha -->
-    <div class="led-panel position-absolute top-0 end-0 p-3 text-end">
-        <div class="d-flex align-items-center justify-content-end mb-2" title="WebSocket WSS">
-            <span class="text-white me-2 small fw-bold text-shadow">WSS</span>
-            <div id="led-ws" class="led led-gray"></div>
+    <!-- Barra superior oscura -->
+    <header class="top-bar">
+        <div class="logo">EXCAVADORA IOT</div>
+        <!-- Los 3 LEDs solicitados -->
+        <div class="leds-container">
+            <div class="led-group">
+                <span class="led-label">WSS</span>
+                <div id="led-ws" class="led led-yellow"></div>
+            </div>
+            <div class="led-group">
+                <span class="led-label">API</span>
+                <div id="led-api" class="led led-yellow"></div>
+            </div>
+            <div class="led-group">
+                <span class="led-label">RDS</span>
+                <div id="led-rds" class="led led-yellow"></div>
+            </div>
         </div>
-        <div class="d-flex align-items-center justify-content-end mb-2" title="API AWS (21 Servicios)">
-            <span class="text-white me-2 small fw-bold text-shadow">API AWS</span>
-            <div id="led-api" class="led led-yellow"></div>
-        </div>
-        <div class="d-flex align-items-center justify-content-end" title="Amazon RDS">
-            <span class="text-white me-2 small fw-bold text-shadow">Amazon RDS</span>
-            <div id="led-rds" class="led led-gray"></div>
-        </div>
-    </div>
+    </header>
 
-    <main class="container my-5 pt-4">
-        <div class="remote-body">
-            <div class="top-plate text-center mb-4">TRUCK CONTROL</div>
-            
-            <div class="row align-items-center">
-                <!-- Joystick Izquierdo (Orugas) -->
-                <div class="col-md-4 text-center">
-                    <h5 class="text-white">ORUGAS</h5>
-                    <div class="d-pad-ring mx-auto" id="joyLeftWrap">
-                        <div class="d-pad-hole"></div>
-                        <div class="joy-stick" id="joyLeft"></div>
+    <div class="main-layout">
+        <!-- Columna Izquierda (Paneles oscuros) -->
+        <aside class="left-panels">
+            <!-- Historial -->
+            <div class="dark-panel">
+                <div class="panel-header">HISTORIAL EN VIVO</div>
+                <div class="panel-content history-box" id="historial">
+                    <!-- Aquí se llenarán los eventos -->
+                </div>
+            </div>
+
+            <!-- Catálogo de Demos (Reemplaza al creador) -->
+            <div class="dark-panel">
+                <div class="panel-header">CATÁLOGO DE DEMOS</div>
+                <div class="panel-content demo-box">
+                    <select id="demoSelect" class="demo-select">
+                        <option value="">Cargando demos...</option>
+                    </select>
+                    <div class="demo-buttons">
+                        <button id="btn-run-demo" class="btn-demo btn-play">▶ EJECUTAR DEMO</button>
+                        <button id="btn-cancel-demo" class="btn-demo btn-stop">⏹ CANCELAR</button>
                     </div>
                 </div>
+            </div>
+        </aside>
 
-                <!-- Panel Central -->
-                <div class="col-md-4 text-center center-panel">
-                    <button id="btn-7" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">💡 LUCES (7)</button>
-                    <button id="btn-5" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">🔊 SONIDO (5)</button>
-                    <button id="btn-8" class="btn btn-warning w-100 mb-4 font-monospace fw-bold">⚙️ AUX (8)</button>
+        <!-- Columna Central (El control principal naranja) -->
+        <main class="center-remote">
+            <div class="remote-body">
+                <div class="remote-header">TRUCK CONTROL</div>
+                
+                <div class="remote-controls">
+                    <!-- Joystick Izquierdo -->
+                    <div class="control-column">
+                        <div class="joystick-label">ORUGAS</div>
+                        <div class="d-pad-ring" id="joyLeftWrap">
+                            <div class="d-pad-hole"></div>
+                            <div class="joy-stick" id="joyLeft"></div>
+                            <!-- Flechas decorativas -->
+                            <div class="arrow up">▲</div><div class="arrow down">▼</div>
+                            <div class="arrow left">◀</div><div class="arrow right">▶</div>
+                        </div>
+                    </div>
 
-                    <!-- Selector de Demos (Solo lectura) -->
-                    <div class="demo-section p-3 bg-dark rounded border border-secondary mb-3">
-                        <h6 class="text-warning">Catálogo de DEMOS</h6>
-                        <select id="demoSelect" class="form-select mb-2 font-monospace">
-                            <option value="">Cargando demos...</option>
-                        </select>
-                        <div class="d-flex gap-2">
-                            <button id="btn-run-demo" class="btn btn-success w-50">▶ Ejecutar</button>
-                            <button id="btn-cancel-demo" class="btn btn-danger w-50">⏹ Cancelar</button>
+                    <!-- Botones Centrales -->
+                    <div class="control-column buttons-column">
+                        <button id="btn-7" class="btn-action">💡 LUCES (7)</button>
+                        <button id="btn-5" class="btn-action">🔊 SONIDO (5)</button>
+                        <button id="btn-8" class="btn-action">⚙️ AUX (8)</button>
+                    </div>
+
+                    <!-- Joystick Derecho -->
+                    <div class="control-column">
+                        <div class="joystick-label">CABINA / BRAZO</div>
+                        <div class="d-pad-ring" id="joyRightWrap">
+                            <div class="d-pad-hole"></div>
+                            <div class="joy-stick" id="joyRight"></div>
+                            <!-- Flechas decorativas -->
+                            <div class="arrow up">▲</div><div class="arrow down">▼</div>
+                            <div class="arrow left">◀</div><div class="arrow right">▶</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Joystick Derecho (Brazo) -->
-                <div class="col-md-4 text-center">
-                    <h5 class="text-white">CABINA / BRAZO</h5>
-                    <div class="d-pad-ring mx-auto" id="joyRightWrap">
-                        <div class="d-pad-hole"></div>
-                        <div class="joy-stick" id="joyRight"></div>
-                    </div>
+                <!-- Botón Detener -->
+                <div class="remote-footer">
+                    <button id="btn-13" class="btn-stop-all">⏹ DETENER TODO (13)</button>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <!-- Indicador de Acción y Botón Detener -->
-            <div class="bottom-plate text-center mt-4">
-                <div class="mb-2">
-                    <span id="action-status" class="badge bg-dark border border-secondary fs-6 font-monospace">Esperando acción...</span>
-                </div>
-                <button id="btn-13" class="btn btn-danger btn-lg w-75 fw-bold fs-4">⏹ DETENER TODO (13)</button>
-            </div>
-        </div>
-    </main>
-
-    <footer class="text-center text-white pb-3 credits position-relative fixed-bottom">
-        <small class="fw-bold">Desarrollado por Silva Barriga Erick Brachiel · 2026</small>
+    <!-- Footer con tu nombre -->
+    <footer class="bottom-footer">
+        Desarrollado por Silva Barriga Erick Brachiel · 2026
     </footer>
 
     <script type="module" src="main.js"></script>
