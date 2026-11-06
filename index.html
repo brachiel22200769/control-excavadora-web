@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Excavadora IoT</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 1. Panel de Indicadores de Estado -->
+    <div class="status-bar d-flex justify-content-around flex-wrap p-2 text-white bg-dark">
+        <div class="indicator">
+            <span id="ind-ws" class="badge bg-secondary">Desconectado</span>
+            <small>WebSocket WSS</small>
+        </div>
+        <div class="indicator">
+            <span id="ind-api" class="badge bg-secondary">Comprobando</span>
+            <small>API AWS (21 Servicios)</small>
+        </div>
+        <div class="indicator">
+            <span id="ind-rds" class="badge bg-secondary">Sin verificar</span>
+            <small>Amazon RDS</small>
+        </div>
+    </div>
+
+    <main class="container my-4">
+        <div class="remote-body">
+            <div class="top-plate text-center mb-4">TRUCK CONTROL</div>
+            
+            <div class="row align-items-center">
+                <!-- Joystick Izquierdo (Orugas) -->
+                <div class="col-md-4 text-center">
+                    <h5 class="text-white">ORUGAS</h5>
+                    <div class="d-pad-ring mx-auto" id="joyLeftWrap">
+                        <div class="d-pad-hole"></div>
+                        <div class="joy-stick" id="joyLeft"></div>
+                    </div>
+                </div>
+
+                <!-- Panel Central (Botones Extras y Catálogo Demos) -->
+                <div class="col-md-4 text-center center-panel">
+                    <button id="btn-7" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">💡 LUCES</button>
+                    <button id="btn-5" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">🔊 SONIDO</button>
+                    <button id="btn-8" class="btn btn-warning w-100 mb-4 font-monospace fw-bold">⚙️ AUX</button>
+
+                    <!-- 2. Catálogo de Demos (Solo lectura y ejecución, sin creación) -->
+                    <div class="demo-section p-3 bg-dark rounded border border-secondary">
+                        <h6 class="text-warning">Catálogo de DEMOS</h6>
+                        <select id="demoSelect" class="form-select mb-2 font-monospace">
+                            <option value="">Cargando demos...</option>
+                        </select>
+                        <div class="d-flex gap-2">
+                            <button id="btn-run-demo" class="btn btn-success w-50">▶ Ejecutar</button>
+                            <button id="btn-cancel-demo" class="btn btn-danger w-50">⏹ Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Joystick Derecho (Brazo) -->
+                <div class="col-md-4 text-center">
+                    <h5 class="text-white">CABINA / BRAZO</h5>
+                    <div class="d-pad-ring mx-auto" id="joyRightWrap">
+                        <div class="d-pad-hole"></div>
+                        <div class="joy-stick" id="joyRight"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Detener Prioritario -->
+            <div class="bottom-plate text-center mt-4">
+                <button id="btn-13" class="btn btn-danger btn-lg w-75 fw-bold fs-4">⏹ DETENER TODO (13)</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. Pie de página con tus créditos -->
+    <footer class="text-center text-white pb-3 credits">
+        <small>Desarrollado por Silva Barriga Erick Brachiel · 2026</small>
+    </footer>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
