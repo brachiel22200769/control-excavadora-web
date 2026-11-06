@@ -1,15 +1,23 @@
 import { CONFIG } from './config.js';
 import { enviarComando, obtenerDemos, checkApiHealth } from './api.js';
 
-// Referencias a LEDs y UI
 const ledWs = document.getElementById('led-ws');
 const ledApi = document.getElementById('led-api');
 const ledRds = document.getElementById('led-rds');
-const actionStatus = document.getElementById('action-status');
+const historialBox = document.getElementById('historial');
 
-// 1. WebSocket
+// Helper para agregar texto al Historial de la UI
+function logHistorial(mensaje) {
+    const time = new Date().toLocaleTimeString('es-MX', { hour12: false });
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<span class="history-time">[${time}]</span> <span class="history-cmd">${mensaje}</span>`;
+    historialBox.prepend(div);
+}
+
+// 1. WebSocket (Control de LED)
 function conectarWebSocket() {
-    ledWs.className = "led led-yellow"; // Conectando
+    ledWs.className = "led led-yellow"; 
     const ws = new WebSocket(CONFIG.WS_URL);
     
     ws.onopen = () => { ledWs.className = "led led-green"; };
@@ -18,22 +26,23 @@ function conectarWebSocket() {
         setTimeout(conectarWebSocket, 5000);
     };
     ws.onmessage = (event) => {
-        // Regla 4.5: Mostrar "evento recibido"
-        actionStatus.innerText = `Evento recibido: ${event.data.substring(0, 20)}...`;
-        actionStatus.className = "badge bg-success border border-success fs-6 font-monospace";
+        logHistorial(`WS: ${event.data.substring(0, 15)}`);
     };
 }
 conectarWebSocket();
 
-// 2. Monitoreo API y RDS
+// 2. Monitoreo API y RDS (Control de LEDs)
 async function monitorearSalud() {
+    ledApi.className = "led led-yellow";
+    ledRds.className = "led led-yellow";
+    
     const apiViva = await checkApiHealth();
     if (apiViva) {
         ledApi.className = "led led-green";
-        ledRds.className = "led led-green"; // Simulamos RDS viva si la API responde
+        ledRds.className = "led led-green"; 
     } else {
         ledApi.className = "led led-red";
-        ledRds.className = "led led-gray"; // Sin verificar
+        ledRds.className = "led led-red";
     }
 }
 setInterval(monitorearSalud, 10000);
@@ -50,26 +59,18 @@ async function cargarDemos() {
 }
 cargarDemos();
 
-// 4. Controlador de envíos con retroalimentación visual (Regla 4.5)
-async function procesarComando(cmd) {
-    actionStatus.innerText = `Solicitado comando ${cmd}...`;
-    actionStatus.className = "badge bg-warning text-dark border border-warning fs-6 font-monospace";
-    
+// 4. Controlador de envíos
+async function procesarComando(cmd, nombreCmd) {
+    logHistorial(`Enviando: ${nombreCmd}`);
     const exito = await enviarComando(cmd);
-    if (exito) {
-        actionStatus.innerText = "Aceptado por API";
-        actionStatus.className = "badge bg-primary border border-primary fs-6 font-monospace";
-    } else {
-        actionStatus.innerText = "Error de red/API";
-        actionStatus.className = "badge bg-danger border border-danger fs-6 font-monospace";
-    }
+    if (!exito) logHistorial(`Error API: ${nombreCmd}`);
 }
 
-// 5. Botones sueltos
-document.getElementById('btn-13').addEventListener('click', () => procesarComando(13));
-document.getElementById('btn-7').addEventListener('click', () => procesarComando(7));
-document.getElementById('btn-5').addEventListener('click', () => procesarComando(5));
-document.getElementById('btn-8').addEventListener('click', () => procesarComando(8));
+// 5. Botones
+document.getElementById('btn-13').addEventListener('click', () => procesarComando(13, 'DETENER TODO'));
+document.getElementById('btn-7').addEventListener('click', () => procesarComando(7, 'LUCES ON/OFF'));
+document.getElementById('btn-5').addEventListener('click', () => procesarComando(5, 'SONIDO'));
+document.getElementById('btn-8').addEventListener('click', () => procesarComando(8, 'AUX'));
 
 // 6. Joysticks
 function configurarJoystick(elementId, mapeo) {
@@ -83,7 +84,7 @@ function configurarJoystick(elementId, mapeo) {
         stick.style.transform = `translate(-50%, -50%)`;
         if (currentCmd !== 13) {
             currentCmd = 13;
-            procesarComando(13);
+            procesarComando(13, 'DETENIDO (Centro)');
         }
     };
 
@@ -105,14 +106,15 @@ function configurarJoystick(elementId, mapeo) {
         stick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
 
         let newCmd = 13;
-        if (y < -20) newCmd = mapeo.up;
-        else if (y > 20) newCmd = mapeo.down;
-        else if (x < -20) newCmd = mapeo.left;
-        else if (x > 20) newCmd = mapeo.right;
+        let nombreCmd = 'DETENIDO';
+        if (y < -20) { newCmd = mapeo.up; nombreCmd = 'ARRIBA'; }
+        else if (y > 20) { newCmd = mapeo.down; nombreCmd = 'ABAJO'; }
+        else if (x < -20) { newCmd = mapeo.left; nombreCmd = 'IZQUIERDA'; }
+        else if (x > 20) { newCmd = mapeo.right; nombreCmd = 'DERECHA'; }
 
         if (newCmd !== currentCmd && newCmd !== 13) {
             currentCmd = newCmd;
-            procesarComando(currentCmd);
+            procesarComando(currentCmd, nombreCmd);
         }
     };
 
@@ -125,6 +127,5 @@ function configurarJoystick(elementId, mapeo) {
     window.addEventListener('touchmove', drag, {passive: false});
 }
 
-// Mapeos ya corregidos
 configurarJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
 configurarJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });

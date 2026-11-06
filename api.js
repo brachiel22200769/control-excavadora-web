@@ -8,10 +8,7 @@ export async function enviarComando(comandoId) {
             body: JSON.stringify({ id_comando: comandoId, origen: 'WEB' })
         });
         return resp.ok;
-    } catch (e) {
-        console.error("Error REST:", e);
-        return false;
-    }
+    } catch (e) { return false; }
 }
 
 export async function obtenerDemos() {
@@ -19,16 +16,12 @@ export async function obtenerDemos() {
         const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demos`);
         if (!resp.ok) return [];
         return await resp.json();
-    } catch (e) {
-        return [];
-    }
+    } catch (e) { return []; }
 }
 
 export async function checkApiHealth() {
     try {
         const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/estado`);
         return resp.ok;
-    } catch (e) {
-        return false;
-    }
+    } catch (e) { return false; }
 }

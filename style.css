@@ -1,79 +1,132 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-    background-color: #5c94fc;
     background-image: url('Fondo.jpg');
     background-size: cover;
     background-position: center bottom;
     background-attachment: fixed;
     font-family: 'Courier New', Courier, monospace;
+    overflow: hidden; /* Evita scroll para que parezca una app nativa */
 }
 
-/* Diseño de LEDs */
-.led-panel { z-index: 1000; }
-.text-shadow { text-shadow: 1px 1px 3px #000; }
-.led {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid #222;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-    transition: background-color 0.3s, box-shadow 0.3s;
+/* --- Barra Superior --- */
+.top-bar {
+    background-color: #111;
+    border-bottom: 2px solid #e69138;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 20px;
+    height: 40px;
 }
-.led-gray { background-color: #555; }
-.led-yellow { background-color: #ffc107; box-shadow: 0 0 10px #ffc107; }
-.led-green { background-color: #28a745; box-shadow: 0 0 15px #28a745; }
-.led-red { background-color: #dc3545; box-shadow: 0 0 15px #dc3545; }
+.logo { color: #f1c40f; font-weight: bold; font-size: 1.2rem; }
+.leds-container { display: flex; gap: 20px; }
+.led-group { display: flex; align-items: center; gap: 8px; }
+.led-label { color: #e69138; font-size: 0.8rem; font-weight: bold; }
+.led { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #000; box-shadow: inset 0 0 4px rgba(0,0,0,0.8); }
+.led-red { background-color: #ff3333; box-shadow: 0 0 10px #ff3333; }
+.led-yellow { background-color: #ffcc00; box-shadow: 0 0 10px #ffcc00; }
+.led-green { background-color: #33cc33; box-shadow: 0 0 10px #33cc33; }
 
-/* Control Remoto */
+/* --- Layout Principal --- */
+.main-layout { display: flex; padding: 20px; gap: 30px; height: calc(100vh - 70px); }
+
+/* --- Columna Izquierda (Paneles) --- */
+.left-panels { display: flex; flex-direction: column; gap: 20px; width: 300px; }
+.dark-panel {
+    background-color: #1a1a1a; border: 2px solid #333; border-radius: 8px;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+}
+.panel-header {
+    color: #e69138; text-align: center; font-weight: bold; border-bottom: 1px solid #333;
+    padding: 10px; font-size: 0.9rem; letter-spacing: 1px;
+}
+.panel-content { padding: 15px; }
+
+/* Historial */
+.history-box {
+    height: 200px; overflow-y: auto; color: #888; font-size: 0.8rem;
+    scrollbar-width: thin; scrollbar-color: #555 #111;
+}
+.history-item { margin-bottom: 5px; border-bottom: 1px dashed #333; padding-bottom: 2px; }
+.history-time { color: #aaa; }
+.history-cmd { color: #f1c40f; font-weight: bold; }
+
+/* Demos */
+.demo-select {
+    width: 100%; background: #222; color: #ddd; border: 1px solid #555;
+    padding: 8px; margin-bottom: 15px; font-family: inherit; border-radius: 4px;
+}
+.demo-buttons { display: flex; gap: 10px; }
+.btn-demo {
+    flex: 1; padding: 10px; border: none; font-weight: bold; font-family: inherit;
+    border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: transform 0.1s;
+}
+.btn-demo:active { transform: scale(0.95); }
+.btn-play { background: #28a745; color: white; border-bottom: 3px solid #1e7e34; }
+.btn-stop { background: #dc3545; color: white; border-bottom: 3px solid #bd2130; }
+
+/* --- Columna Central (Control Naranja) --- */
+.center-remote { flex: 1; display: flex; justify-content: center; align-items: center; }
 .remote-body {
-    background-color: #e69138;
-    border-radius: 20px;
-    max-width: 900px;
-    margin: 0 auto;
-    box-shadow: inset -5px -5px 0px rgba(0,0,0,0.3), inset 5px 5px 0px rgba(255,255,255,0.3), 10px 10px 0px rgba(0,0,0,0.7);
-    border: 5px solid #222;
-    padding: 25px;
+    background-color: #e69138; border-radius: 20px; width: 100%; max-width: 800px;
+    box-shadow: inset -4px -4px 0px rgba(0,0,0,0.2), inset 4px 4px 0px rgba(255,255,255,0.2), 10px 10px 20px rgba(0,0,0,0.8);
+    border: 4px solid #222; padding: 20px; position: relative;
+}
+.remote-header {
+    background-color: #222; color: #f1c40f; font-size: 1.5rem; font-weight: bold;
+    text-align: center; padding: 10px 30px; border-radius: 10px;
+    width: max-content; margin: -40px auto 20px auto; border: 3px solid #111;
 }
 
-.top-plate {
-    background-color: #222;
-    color: #f1c40f;
-    display: inline-block;
-    padding: 10px 30px;
-    border-radius: 0 0 15px 15px;
-    font-weight: 900;
-    font-size: 24px;
-    border-bottom: 4px solid #000;
-    box-shadow: 2px 2px #000;
+.remote-controls { display: flex; justify-content: space-around; align-items: center; }
+.control-column { display: flex; flex-direction: column; align-items: center; }
+.joystick-label {
+    background-color: #222; color: #fff; padding: 5px 15px; border-radius: 15px;
+    font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; border: 2px solid #111;
 }
+
+/* Botones Centrales */
+.buttons-column { gap: 15px; }
+.btn-action {
+    background-color: #333; color: #fff; border: 2px solid #111; padding: 12px 20px;
+    border-radius: 8px; font-family: inherit; font-weight: bold; cursor: pointer;
+    box-shadow: 0 4px 0 #111; transition: all 0.1s; width: 150px;
+}
+.btn-action:active { transform: translateY(4px); box-shadow: 0 0 0 #111; }
 
 /* Joysticks */
 .d-pad-ring {
-    background-color: #222;
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    position: relative;
-    border: 4px solid #111;
+    background-color: #222; width: 160px; height: 160px; border-radius: 50%;
+    position: relative; border: 4px solid #111; box-shadow: inset 0 0 20px #000;
 }
 .d-pad-hole {
-    background-color: #e69138;
-    width: 70px; height: 70px;
-    border-radius: 50%;
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    border: 4px solid #111;
+    background-color: #e69138; width: 60px; height: 60px; border-radius: 50%;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    border: 3px solid #111;
 }
 .joy-stick {
-    width: 60px; height: 60px;
-    background: radial-gradient(circle at 30% 30%, #fff, #aaa);
-    border-radius: 50%;
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 2px 5px 10px rgba(0,0,0,0.5);
-    cursor: grab;
-    z-index: 10;
+    width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #fff, #aaa);
+    border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    box-shadow: 2px 5px 10px rgba(0,0,0,0.5); cursor: grab; z-index: 10;
 }
 .joy-stick:active { cursor: grabbing; }
+.arrow { position: absolute; color: #555; font-size: 12px; }
+.arrow.up { top: 5px; left: 50%; transform: translateX(-50%); }
+.arrow.down { bottom: 5px; left: 50%; transform: translateX(-50%); }
+.arrow.left { top: 50%; left: 5px; transform: translateY(-50%); }
+.arrow.right { top: 50%; right: 5px; transform: translateY(-50%); }
 
-.credits { text-shadow: 2px 2px 4px #000; }
+/* Botón Detener Todo */
+.remote-footer { text-align: center; margin-top: 30px; }
+.btn-stop-all {
+    background-color: #dc3545; color: white; border: 3px solid #8b0000;
+    padding: 15px 40px; border-radius: 8px; font-size: 1.2rem; font-weight: bold;
+    font-family: inherit; cursor: pointer; box-shadow: 0 6px 0 #8b0000; transition: all 0.1s;
+}
+.btn-stop-all:active { transform: translateY(6px); box-shadow: 0 0 0 #8b0000; }
+
+/* --- Footer --- */
+.bottom-footer {
+    position: fixed; bottom: 5px; width: 100%; text-align: center;
+    color: white; font-size: 0.8rem; text-shadow: 1px 1px 2px #000;
+}
