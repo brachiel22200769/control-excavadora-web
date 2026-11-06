@@ -12,9 +12,9 @@
 <header>
     <h1>EXCAVADORA IOT</h1>
     <div class="status-indicator">
-        <div class="led-box"><span class="led-label">WSS</span><span id="led-ws" class="dot sim" title="WebSocket"></span></div>
-        <div class="led-box"><span class="led-label">API</span><span id="led-api" class="dot sim" title="Servicios AWS"></span></div>
-        <div class="led-box"><span class="led-label">RDS</span><span id="led-rds" class="dot sim" title="Base de Datos"></span></div>
+        <div class="led-group"><span class="led-label">WSS</span><span id="led-ws" class="dot sim" title="WebSocket"></span></div>
+        <div class="led-group"><span class="led-label">API</span><span id="led-api" class="dot sim" title="API AWS"></span></div>
+        <div class="led-group"><span class="led-label">RDS</span><span id="led-rds" class="dot sim" title="Amazon RDS"></span></div>
     </div>
 </header>
 
@@ -28,14 +28,13 @@
             <ul id="historyList"></ul>
         </div>
 
-        <!-- Panel de Demos (Solo lectura) -->
+        <!-- Panel de Demos (Reemplazo del creador) -->
         <div class="panel panel-half">
             <h3>CATÁLOGO DE DEMOS</h3>
             <div class="demo-builder">
                 <select id="demoSelect" class="demo-select">
                     <option value="">Cargando demos...</option>
                 </select>
-                
                 <div class="demo-controls">
                     <button class="btn btn-play" id="btn-run-demo">▶ EJECUTAR</button>
                     <button class="btn btn-clear" id="btn-cancel-demo">⏹ CANCELAR</button>
@@ -94,7 +93,7 @@
 
 </main>
 
-<div class="bottom-footer">Desarrollado por Silva Barriga Erick Brachiel · 2026</div>
+<footer class="bottom-footer">Desarrollado por Silva Barriga Erick Brachiel · 2026</footer>
 
 <script type="module" src="main.js"></script>
 </body>

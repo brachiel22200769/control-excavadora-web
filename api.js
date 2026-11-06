@@ -22,16 +22,12 @@ export async function obtenerDemos() {
         const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demos`);
         if (!resp.ok) return [];
         return await resp.json();
-    } catch (e) { 
-        return []; 
-    }
+    } catch (e) { return []; }
 }
 
 export async function checkApiHealth() {
     try {
         const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/estado`);
         return resp.ok;
-    } catch (e) { 
-        return false; 
-    }
+    } catch (e) { return false; }
 }

@@ -7,6 +7,7 @@ const rdsDot = document.getElementById("led-rds");
 const historyList = document.getElementById("historyList");
 
 let ws;
+let modoSimulado = false;
 let lastCommand = 13;
 
 const nombresAcciones = {
@@ -16,30 +17,30 @@ const nombresAcciones = {
 };
 
 // ==========================================
-// 1. HISTORIAL
-// ==========================================
-function agregarAlHistorial(texto) {
-    const li = document.createElement("li");
-    const timeStr = new Date().toTimeString().split(' ')[0];
-    li.innerHTML = `[${timeStr}] <b>${texto}</b>`;
-    historyList.prepend(li);
-    if (historyList.children.length > 25) historyList.removeChild(historyList.lastChild);
-}
-
-// ==========================================
-// 2. CONEXIÓN WEBSOCKET Y SALUD API
+// 1. CONEXIÓN Y SALUD (LOS 3 LEDS)
 // ==========================================
 function iniciarWebSocket() {
-    wsDot.className = "dot sim"; // Amarillo (Conectando)
     try {
         ws = new WebSocket(CONFIG.WS_URL);
-        ws.onopen = () => { wsDot.className = "dot on"; }; // Verde
-        ws.onclose = () => {
-            wsDot.className = "dot err"; // Rojo
-            setTimeout(iniciarWebSocket, 5000);
+        ws.onopen = () => { 
+            modoSimulado = false;
+            wsDot.className = "dot on"; 
         };
-        ws.onerror = () => { wsDot.className = "dot err"; };
-    } catch (e) { wsDot.className = "dot err"; }
+        ws.onmessage = (event) => { /* Retransmisión */ };
+        ws.onclose = () => {
+            if (!modoSimulado) {
+                wsDot.className = "dot err";
+                setTimeout(iniciarWebSocket, 3000);
+            }
+        };
+        ws.onerror = () => {
+            modoSimulado = true;
+            wsDot.className = "dot err";
+        };
+    } catch (e) {
+        modoSimulado = true;
+        wsDot.className = "dot err";
+    }
 }
 
 async function monitorearSalud() {
@@ -48,7 +49,7 @@ async function monitorearSalud() {
     const apiViva = await checkApiHealth();
     if (apiViva) {
         apiDot.className = "dot on";
-        rdsDot.className = "dot on"; // RDS viva si API responde
+        rdsDot.className = "dot on";
     } else {
         apiDot.className = "dot err";
         rdsDot.className = "dot err";
@@ -56,35 +57,55 @@ async function monitorearSalud() {
 }
 
 // ==========================================
-// 3. ENVÍO DE COMANDOS
+// 2. ENVÍO DE COMANDOS Y BOTONES (El arreglo del amarillo)
 // ==========================================
-async function procesarComando(cmdId) {
-    if(cmdId !== 13 && cmdId === lastCommand) return;
+async function enviarComando(cmdId) {
+    if(cmdId !== 13 && cmdId === lastCommand) return; 
     lastCommand = cmdId;
 
     const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
     agregarAlHistorial(nombreComando);
 
-    // 1. Envío WebSocket (Inmediato)
+    if (modoSimulado) return;
+
+    // WebSocket Directo
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ status: cmdId }));
     }
 
-    // 2. Envío REST
-    const result = await enviarComandoRest(cmdId);
-    if (!result.ok) {
-        agregarAlHistorial(`<span style="color: #e74c3c;">[INFO DB] ${result.error}</span>`);
+    // Petición REST
+    const res = await enviarComandoRest(cmdId);
+    if (!res.ok) {
+        agregarAlHistorial(`<span style="color: #e74c3c;">[INFO DB] ${res.error}</span>`);
     }
 }
 
-// Enlazar Botones Centrales
-document.getElementById('btn-7').addEventListener('click', function() { procesarComando(7); this.classList.toggle('active-toggle'); });
-document.getElementById('btn-5').addEventListener('click', function() { procesarComando(5); this.classList.toggle('active-toggle'); });
-document.getElementById('btn-8').addEventListener('click', () => procesarComando(8));
-document.getElementById('btn-stop').addEventListener('click', () => procesarComando(13));
+function agregarAlHistorial(texto) {
+    const li = document.createElement("li");
+    const timeStr = new Date().toTimeString().split(' ')[0];
+    li.innerHTML = `[${timeStr}] <b>${texto}</b>`;
+    historyList.prepend(li);
+    if (historyList.children.length > 25) historyList.removeChild(historyList.lastChild);
+}
+
+// Conectamos los botones de HTML a las funciones de JS y devolvemos su efecto Toggle (Brillo amarillo)
+document.getElementById('btn-7').addEventListener('click', function() {
+    enviarComando(7);
+    this.classList.toggle('active-toggle');
+});
+document.getElementById('btn-5').addEventListener('click', function() {
+    enviarComando(5);
+    this.classList.toggle('active-toggle');
+});
+document.getElementById('btn-8').addEventListener('click', function() {
+    enviarComando(8);
+});
+document.getElementById('btn-stop').addEventListener('click', function() {
+    enviarComando(13);
+});
 
 // ==========================================
-// 4. CATÁLOGO DE DEMOS
+// 3. CATÁLOGO DE DEMOS
 // ==========================================
 async function cargarDemos() {
     const select = document.getElementById('demoSelect');
@@ -94,9 +115,13 @@ async function cargarDemos() {
         select.innerHTML += `<option value="${d.id_demo}">${d.nombre}</option>`;
     });
 }
+document.getElementById('btn-run-demo').addEventListener('click', () => {
+    // Aquí implementaremos la ejecución de Demos cuando gustes
+    agregarAlHistorial("Ejecutando Demo..."); 
+});
 
 // ==========================================
-// 5. LÓGICA DE LOS JOYSTICKS
+// 4. LÓGICA DE LOS JOYSTICKS (100% tu código original)
 // ==========================================
 function setupJoystick(joystickId, mapConfig) {
     const stick = document.getElementById(joystickId);
@@ -142,7 +167,7 @@ function setupJoystick(joystickId, mapConfig) {
 
         if(newCommand !== activeCommand) {
             activeCommand = newCommand;
-            if(activeCommand !== 13) procesarComando(activeCommand);
+            if(activeCommand !== 13) enviarComando(activeCommand);
         }
     }
 
@@ -153,7 +178,7 @@ function setupJoystick(joystickId, mapConfig) {
         stick.style.transform = `translate(0px, 0px)`;
         
         activeCommand = 13;
-        procesarComando(13); 
+        enviarComando(13); 
     }
 
     stick.addEventListener('mousedown', onStart);
@@ -165,10 +190,13 @@ function setupJoystick(joystickId, mapConfig) {
     window.addEventListener('touchend', onEnd);
 }
 
-// Configuración original preservada
+// Configuración Orugas y Brazo/Cabina
 setupJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
 setupJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });
 
+// ==========================================
+// INICIO AUTOMÁTICO
+// ==========================================
 window.onload = () => {
     iniciarWebSocket();
     monitorearSalud();
