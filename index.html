@@ -9,23 +9,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 1. Panel de Indicadores de Estado -->
-    <div class="status-bar d-flex justify-content-around flex-wrap p-2 text-white bg-dark">
-        <div class="indicator">
-            <span id="ind-ws" class="badge bg-secondary">Desconectado</span>
-            <small>WebSocket WSS</small>
+    <!-- Panel de LEDs en la esquina superior derecha -->
+    <div class="led-panel position-absolute top-0 end-0 p-3 text-end">
+        <div class="d-flex align-items-center justify-content-end mb-2" title="WebSocket WSS">
+            <span class="text-white me-2 small fw-bold text-shadow">WSS</span>
+            <div id="led-ws" class="led led-gray"></div>
         </div>
-        <div class="indicator">
-            <span id="ind-api" class="badge bg-secondary">Comprobando</span>
-            <small>API AWS (21 Servicios)</small>
+        <div class="d-flex align-items-center justify-content-end mb-2" title="API AWS (21 Servicios)">
+            <span class="text-white me-2 small fw-bold text-shadow">API AWS</span>
+            <div id="led-api" class="led led-yellow"></div>
         </div>
-        <div class="indicator">
-            <span id="ind-rds" class="badge bg-secondary">Sin verificar</span>
-            <small>Amazon RDS</small>
+        <div class="d-flex align-items-center justify-content-end" title="Amazon RDS">
+            <span class="text-white me-2 small fw-bold text-shadow">Amazon RDS</span>
+            <div id="led-rds" class="led led-gray"></div>
         </div>
     </div>
 
-    <main class="container my-4">
+    <main class="container my-5 pt-4">
         <div class="remote-body">
             <div class="top-plate text-center mb-4">TRUCK CONTROL</div>
             
@@ -39,14 +39,14 @@
                     </div>
                 </div>
 
-                <!-- Panel Central (Botones Extras y Catálogo Demos) -->
+                <!-- Panel Central -->
                 <div class="col-md-4 text-center center-panel">
-                    <button id="btn-7" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">💡 LUCES</button>
-                    <button id="btn-5" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">🔊 SONIDO</button>
-                    <button id="btn-8" class="btn btn-warning w-100 mb-4 font-monospace fw-bold">⚙️ AUX</button>
+                    <button id="btn-7" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">💡 LUCES (7)</button>
+                    <button id="btn-5" class="btn btn-warning w-100 mb-2 font-monospace fw-bold">🔊 SONIDO (5)</button>
+                    <button id="btn-8" class="btn btn-warning w-100 mb-4 font-monospace fw-bold">⚙️ AUX (8)</button>
 
-                    <!-- 2. Catálogo de Demos (Solo lectura y ejecución, sin creación) -->
-                    <div class="demo-section p-3 bg-dark rounded border border-secondary">
+                    <!-- Selector de Demos (Solo lectura) -->
+                    <div class="demo-section p-3 bg-dark rounded border border-secondary mb-3">
                         <h6 class="text-warning">Catálogo de DEMOS</h6>
                         <select id="demoSelect" class="form-select mb-2 font-monospace">
                             <option value="">Cargando demos...</option>
@@ -68,16 +68,18 @@
                 </div>
             </div>
 
-            <!-- Botón Detener Prioritario -->
+            <!-- Indicador de Acción y Botón Detener -->
             <div class="bottom-plate text-center mt-4">
+                <div class="mb-2">
+                    <span id="action-status" class="badge bg-dark border border-secondary fs-6 font-monospace">Esperando acción...</span>
+                </div>
                 <button id="btn-13" class="btn btn-danger btn-lg w-75 fw-bold fs-4">⏹ DETENER TODO (13)</button>
             </div>
         </div>
     </main>
 
-    <!-- 3. Pie de página con tus créditos -->
-    <footer class="text-center text-white pb-3 credits">
-        <small>Desarrollado por Silva Barriga Erick Brachiel · 2026</small>
+    <footer class="text-center text-white pb-3 credits position-relative fixed-bottom">
+        <small class="fw-bold">Desarrollado por Silva Barriga Erick Brachiel · 2026</small>
     </footer>
 
     <script type="module" src="main.js"></script>
