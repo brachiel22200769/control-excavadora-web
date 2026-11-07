@@ -12,8 +12,8 @@ let lastCommand = 13;
 
 const nombresAcciones = {
     1: "GIRANDO IZQUIERDA", 2: "AVANZANDO", 3: "RETROCEDIENDO", 4: "GIRANDO DERECHA",
-    5: "SONIDO ON/OFF", 7: "LUCES ON/OFF", 8: "MODO AUX",
-    9: "CABINA IZQUIERDA", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "CABINA DERECHA", 13: "DETENIDO"
+    5: "SONIDO ON/OFF", 7: "CABINA IZQUIERDA", 8: "MODO AUX",
+    9: "LUCES ON/OFF", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "CABINA DERECHA", 13: "DETENIDO"
 };
 
 // ==========================================
@@ -95,7 +95,7 @@ function agregarAlHistorial(texto) {
 
 // Conectamos los botones de HTML a las funciones de JS y devolvemos su efecto Toggle (Brillo amarillo)
 document.getElementById('btn-7').addEventListener('click', function() {
-    enviarComando(7);
+    enviarComando(9);
     this.classList.toggle('active-toggle');
 });
 document.getElementById('btn-5').addEventListener('click', function() {
@@ -197,7 +197,7 @@ function setupJoystick(joystickId, mapConfig) {
 
 // Configuración Orugas y Brazo/Cabina
 setupJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
-setupJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });
+setupJoystick('joyRight', { up: 10, down: 11, left: 7, right: 12 });
 
 // ==========================================
 // INICIO AUTOMÁTICO
