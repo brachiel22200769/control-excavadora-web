@@ -27,7 +27,9 @@ export async function obtenerDemos() {
 
 export async function checkApiHealth() {
     try {
-        const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/estado`);
+        const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/estado`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
         return resp.ok;
     } catch (e) { return false; }
 }
