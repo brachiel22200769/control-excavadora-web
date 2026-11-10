@@ -1,5 +1,4 @@
 export const CONFIG = {
-    API_BASE: "https://mutual-spearhead-factoid.ngrok-free.dev/api",
-    WS_URL: "wss://mutual-spearhead-factoid.ngrok-free.dev/ws",
+    API_BASE: "https://corsproxy.io/?https://mutual-spearhead-factoid.ngrok-free.dev/api",
     VEHICULO_ID: 1
 };
