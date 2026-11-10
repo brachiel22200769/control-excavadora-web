@@ -1,6 +1,9 @@
 import { CONFIG } from './config.js';
-import { enviarComandoRest, obtenerDemos, checkApiHealth } from './api.js';
+import { enviarComandoRest, checkApiHealth } from './api.js';
 
+// ==========================================
+// REFERENCIAS HTML
+// ==========================================
 const wsDot = document.getElementById("led-ws");
 const apiDot = document.getElementById("led-api");
 const rdsDot = document.getElementById("led-rds");
@@ -12,12 +15,12 @@ let lastCommand = 13;
 
 const nombresAcciones = {
     1: "GIRANDO IZQUIERDA", 2: "AVANZANDO", 3: "RETROCEDIENDO", 4: "GIRANDO DERECHA",
-    5: "SONIDO ON/OFF", 7: "LUZ", 8: "MODO AUX",
-    9: "CABINA IZQUIERDA", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "CABINA DERECHA", 13: "DETENIDO"
+    5: "SONIDO ON/OFF", 7: "ROTANDO CABINA IZQ", 8: "MODO AUX",
+    9: "LUCES ON/OFF", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "ROTANDO CABINA DER", 13: "DETENIDO"
 };
 
 // ==========================================
-// 1. CONEXIÓN Y SALUD (LOS 3 LEDS)
+// 1. CONEXIÓN WEBSOCKET Y SALUD
 // ==========================================
 function iniciarWebSocket() {
     try {
@@ -26,7 +29,7 @@ function iniciarWebSocket() {
             modoSimulado = false;
             wsDot.className = "dot on"; 
         };
-        ws.onmessage = (event) => { /* Retransmisión */ };
+        ws.onmessage = (event) => { console.log("WS:", event.data) };
         ws.onclose = () => {
             if (!modoSimulado) {
                 wsDot.className = "dot err";
@@ -57,34 +60,8 @@ async function monitorearSalud() {
 }
 
 // ==========================================
-// 2. ENVÍO DE COMANDOS Y BOTONES (El arreglo del amarillo)
+// 2. HISTORIAL Y ENVÍO DE COMANDOS
 // ==========================================
-async function enviarComando(cmdId) {
-    if(cmdId !== 13 && cmdId === lastCommand) return; 
-    lastCommand = cmdId;
-
-    const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
-    
-    // 1. Evidencia de que el usuario lo movió en la UI
-    agregarAlHistorial(`Solicitado: ${nombreComando}`);
-
-    if (modoSimulado) return;
-
-    // WebSocket Directo (opcional según tu lógica)
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ status: cmdId }));
-    }
-
-    // 2. Evidencia de que el servidor FastAPI respondió 200 OK
-    const res = await enviarComandoRest(cmdId);
-    if (!res.ok) {
-        agregarAlHistorial(`<span style="color: #e74c3c;">[ERROR API] ${res.error}</span>`);
-    } else {
-        agregarAlHistorial(`<span style="color: #3498db;">[API] Comando Aceptado</span>`);
-    }
-}
-
-
 function agregarAlHistorial(texto) {
     const li = document.createElement("li");
     const timeStr = new Date().toTimeString().split(' ')[0];
@@ -93,14 +70,33 @@ function agregarAlHistorial(texto) {
     if (historyList.children.length > 25) historyList.removeChild(historyList.lastChild);
 }
 
-// Conectamos los botones de HTML a las funciones de JS y devolvemos su efecto Toggle (Brillo amarillo)
+async function enviarComando(cmdId) {
+    if(cmdId !== 13 && cmdId === lastCommand) return; 
+    lastCommand = cmdId;
+
+    const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
+    agregarAlHistorial(`Solicitado: ${nombreComando}`);
+
+    if (modoSimulado) return;
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ status: cmdId }));
+    }
+
+    const res = await enviarComandoRest(cmdId);
+    if (!res.ok) {
+        agregarAlHistorial(`<span style="color: #e74c3c;">[ERROR API] ${res.error}</span>`);
+    } else {
+        agregarAlHistorial(`<span style="color: #3498db;">[API] Comando Aceptado</span>`);
+    }
+}
+
+// Botones centrales
 document.getElementById('btn-7').addEventListener('click', function() {
-    enviarComando(7);
-    this.classList.toggle('active-toggle');
+    enviarComando(7); this.classList.toggle('active-toggle');
 });
 document.getElementById('btn-5').addEventListener('click', function() {
-    enviarComando(5);
-    this.classList.toggle('active-toggle');
+    enviarComando(5); this.classList.toggle('active-toggle');
 });
 document.getElementById('btn-8').addEventListener('click', function() {
     enviarComando(8);
@@ -110,23 +106,64 @@ document.getElementById('btn-stop').addEventListener('click', function() {
 });
 
 // ==========================================
-// 3. CATÁLOGO DE DEMOS
+// 3. CATÁLOGO Y EJECUCIÓN DE DEMOS
 // ==========================================
 async function cargarDemos() {
-    const select = document.getElementById('demoSelect');
-    const demos = await obtenerDemos();
-    select.innerHTML = '<option value="">Seleccione una DEMO...</option>';
-    demos.forEach(d => {
-        select.innerHTML += `<option value="${d.id_demo}">${d.nombre}</option>`;
-    });
+    try {
+        const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demos`, {
+            method: 'GET',
+            headers: { 
+                'ngrok-skip-browser-warning': 'true', 
+                'Accept': 'application/json' 
+            }
+        });
+        
+        if (!resp.ok) throw new Error("Error en red");
+        const demos = await resp.json();
+        
+        const select = document.querySelector('.demo-select');
+        select.innerHTML = '<option value="">Seleccione una DEMO...</option>';
+        
+        demos.forEach(demo => {
+            let opt = document.createElement('option');
+            opt.value = demo.id_demo;
+            opt.text = `${demo.id_demo} - ${demo.nombre}`;
+            select.appendChild(opt);
+        });
+    } catch (error) {
+        console.error("Fallo al cargar las demos:", error);
+    }
 }
-document.getElementById('btn-run-demo').addEventListener('click', () => {
-    // Aquí implementaremos la ejecución de Demos cuando gustes
-    agregarAlHistorial("Ejecutando Demo..."); 
+
+document.querySelector('.btn-play').addEventListener('click', async () => {
+    const idDemo = document.querySelector('.demo-select').value;
+    if (!idDemo) { alert("Selecciona una demo de la lista primero."); return; }
+
+    try {
+        agregarAlHistorial(`Iniciando Demo ${idDemo}...`);
+        await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demo/${idDemo}/iniciar`, {
+            method: 'POST',
+            headers: { 'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json' }
+        });
+    } catch (e) {
+        agregarAlHistorial(`<span style="color: #e74c3c;">Error al iniciar demo</span>`);
+    }
+});
+
+document.querySelector('.btn-clear').addEventListener('click', async () => {
+    try {
+        agregarAlHistorial(`Cancelando Demo...`);
+        await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demo/cancelar`, {
+            method: 'POST',
+            headers: { 'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json' }
+        });
+    } catch (e) {
+        console.error("Error al cancelar demo", e);
+    }
 });
 
 // ==========================================
-// 4. LÓGICA DE LOS JOYSTICKS (100% tu código original)
+// 4. LÓGICA DE LOS JOYSTICKS
 // ==========================================
 function setupJoystick(joystickId, mapConfig) {
     const stick = document.getElementById(joystickId);
@@ -142,7 +179,6 @@ function setupJoystick(joystickId, mapConfig) {
     function onMove(e) {
         if (!isDragging) return;
         e.preventDefault(); 
-
         const rect = stick.parentElement.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -181,7 +217,6 @@ function setupJoystick(joystickId, mapConfig) {
         isDragging = false;
         stick.style.transition = "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
         stick.style.transform = `translate(0px, 0px)`;
-        
         activeCommand = 13;
         enviarComando(13); 
     }
@@ -195,12 +230,11 @@ function setupJoystick(joystickId, mapConfig) {
     window.addEventListener('touchend', onEnd);
 }
 
-// Configuración Orugas y Brazo/Cabina
 setupJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
 setupJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });
 
 // ==========================================
-// INICIO AUTOMÁTICO
+// 5. INICIO AUTOMÁTICO
 // ==========================================
 window.onload = () => {
     iniciarWebSocket();
