@@ -29,7 +29,28 @@ function iniciarWebSocket() {
             modoSimulado = false;
             wsDot.className = "dot on"; 
         };
-        ws.onmessage = (event) => { console.log("WS:", event.data) };
+        
+        // AQUI ESTÁ LA MAGIA: Escuchamos los comandos en tiempo real
+        ws.onmessage = (event) => { 
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Si la API nos manda un "status", es un paso de la DEMO ejecutándose
+                if (data.status !== undefined) {
+                    const cmdId = parseInt(data.status);
+                    
+                    // 1. Movemos los joysticks físicamente
+                    animarInterfazFantasma(cmdId);
+                    
+                    // 2. Actualizamos el texto en el Liquid Glass
+                    const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
+                    actualizarUltimoMovimiento(nombreComando);
+                }
+            } catch (e) {
+                console.log("Dato crudo WS:", event.data);
+            }
+        };
+        
         ws.onclose = () => {
             if (!modoSimulado) {
                 wsDot.className = "dot err";
@@ -290,3 +311,42 @@ tabHistorial.addEventListener('click', () => {
     tabHistorial.className = 'tab-btn active'; 
     tabControl.className = 'tab-btn inactive';
 });
+
+
+// ==========================================
+// 7. ANIMACIÓN FANTASMA PARA LAS DEMOS (PUNTO 3)
+// ==========================================
+function animarInterfazFantasma(cmdId) {
+    const joyLeft = document.getElementById('joyLeft');
+    const joyRight = document.getElementById('joyRight');
+    
+    // 1. Reiniciamos ambos joysticks al centro por defecto
+    joyLeft.style.transform = 'translate(0px, 0px)';
+    joyRight.style.transform = 'translate(0px, 0px)';
+    
+    // 2. Aplicamos el movimiento visual según el comando
+    switch(cmdId) {
+        // Orugas (Joystick Izquierdo)
+        case 2: joyLeft.style.transform = 'translate(0px, -50px)'; break; // Avanza
+        case 3: joyLeft.style.transform = 'translate(0px, 50px)'; break;  // Retrocede
+        case 4: joyLeft.style.transform = 'translate(-50px, 0px)'; break; // Izquierda
+        case 1: joyLeft.style.transform = 'translate(50px, 0px)'; break;  // Derecha
+        
+        // Cabina y Brazo (Joystick Derecho)
+        case 10: joyRight.style.transform = 'translate(0px, -50px)'; break; // Sube Brazo
+        case 11: joyRight.style.transform = 'translate(0px, 50px)'; break;  // Baja Brazo
+        case 9:  joyRight.style.transform = 'translate(-50px, 0px)'; break; // Cabina Izq
+        case 12: joyRight.style.transform = 'translate(50px, 0px)'; break;  // Cabina Der
+        
+        // Botones Centrales (Los hacemos parpadear medio segundo)
+        case 7: 
+        case 5: 
+        case 8: 
+            const btn = document.getElementById(`btn-${cmdId}`);
+            if(btn) {
+                btn.classList.add('active-toggle');
+                setTimeout(() => btn.classList.remove('active-toggle'), 500);
+            }
+            break;
+    }
+}
