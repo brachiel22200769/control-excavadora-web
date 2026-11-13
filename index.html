@@ -136,22 +136,26 @@
         <!-- ========================================== -->
         <!-- VISTA 2: HISTORIAL EN VIVO -->
         <!-- ========================================== -->
-        <div id="view-historial" style="display: none; width: 100%; max-width: 800px; margin: 0 auto;">
-            <div class="panel" style="height: 60vh;">
-                <h3 style="text-align: center;">HISTORIAL DE OPERACIONES</h3>
-                <ul id="historyList" style="overflow-y: auto; height: 85%; padding-right: 10px;"></ul>
-            </div>
-        </div>
+        <div id="view-historial"
+            style="display: none; width: 100%; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap;">
 
-        <!-- Panel Último Movimiento (DERECHA) -->
-        <aside class="sidebar-right">
-            <div class="panel glass-panel">
-                <h3>ÚLTIMO MOVIMIENTO</h3>
-                <div class="last-move-display" id="last-move-history">
-                    <span class="cmd-text">ESPERANDO...</span>
+            <!-- Historial (Centro) -->
+            <div class="sidebar" style="width: 100%; max-width: 600px;">
+                <div class="panel" style="height: 60vh;">
+                    <h3 style="text-align: center;">HISTORIAL DE OPERACIONES</h3>
+                    <ul id="historyList" style="overflow-y: auto; height: 85%; padding-right: 10px;"></ul>
                 </div>
             </div>
-        </aside>
+
+            <!-- Panel Último Movimiento (DERECHA) -->
+            <aside class="sidebar-right">
+                <div class="panel glass-panel">
+                    <h3>ÚLTIMO MOVIMIENTO</h3>
+                    <div class="last-move-display" id="last-move-history">
+                        <span class="cmd-text">ESPERANDO...</span>
+                    </div>
+                </div>
+            </aside>
 
         </div>
 
