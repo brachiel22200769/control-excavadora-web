@@ -1,4 +1,4 @@
-import { CONFIG } from './assets/config.js';
+import { CONFIG } from './config.js';
 import { enviarComandoRest, checkApiHealth } from './api.js';
 
 // ==========================================

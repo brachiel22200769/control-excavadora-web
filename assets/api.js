@@ -1,4 +1,4 @@
-import { CONFIG } from './assets/config.js';
+import { CONFIG } from './config.js';
 
 export async function enviarComandoRest(comandoId) {
     try {
