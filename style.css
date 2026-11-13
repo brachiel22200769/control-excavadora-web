@@ -119,8 +119,11 @@ header h1 { font-size: 1.5rem; color: #f1c40f; text-shadow: 2px 2px #000; margin
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
-}
-
+    
+    /* --- LÍNEAS NUEVAS PARA MOVER Y AJUSTAR --- */
+    margin-top: -60px;      
+    margin-left: -50px;     
+    transform: scale(0.93);
 .top-plate {
     background-color: #222;
     color: #f1c40f;
