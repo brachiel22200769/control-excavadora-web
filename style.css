@@ -119,6 +119,9 @@ header h1 { font-size: 1.5rem; color: #f1c40f; text-shadow: 2px 2px #000; margin
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
+
+    margin-top: -30px;
+    transform: scale(0.95);
 }
 
 .top-plate {
