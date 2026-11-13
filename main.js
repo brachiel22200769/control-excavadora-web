@@ -253,21 +253,15 @@ const viewControl = document.getElementById('view-control');
 const viewHistorial = document.getElementById('view-historial');
 
 tabControl.addEventListener('click', () => {
-    // Mostrar Control, ocultar Historial
     viewControl.style.display = 'block';
     viewHistorial.style.display = 'none';
-    tabControl.className = 'tab-btn active';
-    // Cambiar estilos de los botones (Activo / Inactivo)
-    // tabControl.className = 'btn btn-warning active';
+    tabControl.className = 'tab-btn active'; //
     tabHistorial.className = 'tab-btn inactive';
 });
 
 tabHistorial.addEventListener('click', () => {
-    // Mostrar Historial, ocultar Control
     viewHistorial.style.display = 'block';
     viewControl.style.display = 'none';
-    tabHistorial.className = 'tab-btn active';
-    // Cambiar estilos de los botones (Activo / Inactivo)
-    // tabHistorial.className = 'btn btn-warning active';
+    tabHistorial.className = 'tab-btn active'; //
     tabControl.className = 'tab-btn inactive';
 });
