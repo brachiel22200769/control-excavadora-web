@@ -257,10 +257,9 @@ tabControl.addEventListener('click', () => {
     viewControl.style.display = 'block';
     viewHistorial.style.display = 'none';
     tabControl.className = 'tab-btn active';
-    
     // Cambiar estilos de los botones (Activo / Inactivo)
     // tabControl.className = 'btn btn-warning active';
-    tabHistorial.className = 'btn btn-outline-warning';
+    tabHistorial.className = 'tab-btn inactive';
 });
 
 tabHistorial.addEventListener('click', () => {
