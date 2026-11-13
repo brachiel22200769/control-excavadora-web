@@ -1,20 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Central de Control - Excavadora IoT</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Estilos rápidos para las pestañas de navegación */
-        .tab-btn { padding: 10px 20px; font-weight: bold; cursor: pointer; border: 2px solid #f39c12; outline: none; }
-        .tab-btn.active { background-color: #f39c12; color: #000; }
-        .tab-btn.inactive { background-color: transparent; color: #f39c12; }
-    </style>
 </head>
-
 <body>
 
     <header>
@@ -26,89 +18,75 @@
         </div>
     </header>
 
-    <main class="dashboard" style="display: flex; flex-direction: column; align-items: center;">
+    <!-- Pestañas de Navegación -->
+    <div class="tabs-container">
+        <button id="tab-control" class="tab-btn active">🎮 Control y Demos</button>
+        <button id="tab-historial" class="tab-btn inactive">📜 Historial en Vivo</button>
+    </div>
 
-        <!-- ========================================== -->
-        <!-- MENÚ DE NAVEGACIÓN -->
-        <!-- ========================================== -->
-        <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
-            <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 5px 0 0 5px;">🎮 Control y Demos</button>
-            <button type="button" class="tab-btn inactive" id="tab-historial" style="border-radius: 0 5px 5px 0;">📜 Historial en Vivo</button>
-        </div>
-
-        <!-- ========================================== -->
+    <main class="dashboard">
+        
         <!-- VISTA 1: CONTROL Y DEMOS -->
-        <!-- ========================================== -->
-        <div id="view-control" style="display: block; width: 100%;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%;">
-                
-                <!-- Panel de Demos -->
-                <aside class="sidebar" style="width: auto;">
-                    <div class="panel">
-                        <h3>CATÁLOGO DE DEMOS</h3>
-                        <div class="demo-builder">
-                            <select id="demoSelect" class="demo-select">
-                                <option value="">Cargando demos...</option>
-                            </select>
-                            <div class="demo-controls">
-                                <button class="btn btn-play" id="btn-run-demo">▶ EJECUTAR</button>
-                                <button class="btn btn-clear" id="btn-cancel-demo">⏹ CANCELAR</button>
+        <div id="view-control" class="view-wrapper" style="display: flex;">
+            <aside class="sidebar">
+                <div class="panel" style="height: 100%;">
+                    <h3>CATÁLOGO DE DEMOS</h3>
+                    <div class="demo-builder">
+                        <select id="demoSelect" class="demo-select">
+                            <option value="">Cargando demos...</option>
+                        </select>
+                        <div class="demo-controls">
+                            <button class="btn btn-play" id="btn-run-demo">▶ EJECUTAR</button>
+                            <button class="btn btn-clear" id="btn-cancel-demo">⏹ CANCELAR</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="main-control-area">
+                <div class="remote-body">
+                    <div class="top-plate">TRUCK CONTROL</div>
+                    <div class="control-grid">
+                        <div class="joy-wrap">
+                            <div class="joy-label">ORUGAS</div>
+                            <div class="d-pad-ring">
+                                <div class="dir-hint up"><b>▲</b>Fwd</div>
+                                <div class="dir-hint down">Rev<b>▼</b></div>
+                                <div class="dir-hint left"><b>◀</b>Izq</div>
+                                <div class="dir-hint right">Der<b>▶</b></div>
+                                <div class="joy-stick" id="joyLeft"></div>
+                            </div>
+                        </div>
+
+                        <div class="center-panel">
+                            <button id="btn-7" class="btn-center">💡 LUCES</button>
+                            <button id="btn-5" class="btn-center">🔊 SONIDO</button>
+                            <button id="btn-8" class="btn-center">✨ AUX</button>
+                        </div>
+
+                        <div class="joy-wrap">
+                            <div class="joy-label">CABINA / BRAZO</div>
+                            <div class="d-pad-ring">
+                                <div class="dir-hint up"><b>▲</b>Sube</div>
+                                <div class="dir-hint down">Baja<b>▼</b></div>
+                                <div class="dir-hint left"><b>◀</b>C.Izq</div>
+                                <div class="dir-hint right">C.Der<b>▶</b></div>
+                                <div class="joy-stick" id="joyRight"></div>
                             </div>
                         </div>
                     </div>
-                </aside>
-
-                <!-- Control Remoto -->
-                <section class="main-control-area">
-                    <div class="remote-body">
-                        <div class="top-plate">TRUCK CONTROL</div>
-                        <div class="control-grid">
-                            <!-- JOYSTICK IZQUIERDO -->
-                            <div class="joy-wrap">
-                                <div class="joy-label">ORUGAS</div>
-                                <div class="d-pad-ring">
-                                    <div class="dir-hint up"><b>▲</b>Fwd</div>
-                                    <div class="dir-hint down">Rev<b>▼</b></div>
-                                    <div class="dir-hint left"><b>◀</b>Izq</div>
-                                    <div class="dir-hint right">Der<b>▶</b></div>
-                                    <div class="joy-stick" id="joyLeft"></div>
-                                </div>
-                            </div>
-
-                            <!-- BOTONES CENTRALES -->
-                            <div class="center-panel">
-                                <button id="btn-7" class="btn-center">💡 LUCES</button>
-                                <button id="btn-5" class="btn-center">🔊 SONIDO</button>
-                                <button id="btn-8" class="btn-center">✨ AUX</button>
-                            </div>
-
-                            <!-- JOYSTICK DERECHO -->
-                            <div class="joy-wrap">
-                                <div class="joy-label">CABINA / BRAZO</div>
-                                <div class="d-pad-ring">
-                                    <div class="dir-hint up"><b>▲</b>Sube</div>
-                                    <div class="dir-hint down">Baja<b>▼</b></div>
-                                    <div class="dir-hint left"><b>◀</b>C.Izq</div>
-                                    <div class="dir-hint right">C.Der<b>▶</b></div>
-                                    <div class="joy-stick" id="joyRight"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bottom-plate">
-                            <button id="btn-stop">⏹ DETENER TODO (13)</button>
-                        </div>
+                    <div class="bottom-plate">
+                        <button id="btn-stop">⏹ DETENER TODO (13)</button>
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
         </div>
 
-        <!-- ========================================== -->
-        <!-- VISTA 2: HISTORIAL EN VIVO -->
-        <!-- ========================================== -->
-        <div id="view-historial" style="display: none; width: 100%; max-width: 800px; margin: 0 auto;">
-            <div class="panel" style="height: 60vh;">
-                <h3 style="text-align: center;">HISTORIAL DE OPERACIONES</h3>
-                <ul id="historyList" style="overflow-y: auto; height: 85%; padding-right: 10px;"></ul>
+        <!-- VISTA 2: HISTORIAL EN VIVO (Oculto por defecto) -->
+        <div id="view-historial" class="view-wrapper" style="display: none; justify-content: center;">
+            <div class="panel" style="width: 100%; max-width: 800px; height: 100%;">
+                <h3>HISTORIAL DE OPERACIONES</h3>
+                <ul id="historyList"></ul>
             </div>
         </div>
 
@@ -118,5 +96,4 @@
 
     <script type="module" src="main.js"></script>
 </body>
-
 </html>
