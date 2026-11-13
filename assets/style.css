@@ -10,7 +10,7 @@
 
 body {
     background-color: #5c94fc;
-    background-image: url('Fondo.jpg');
+    background-image: url('../IMG/Fondo.jpg');
     background-size: cover;
     background-position: center bottom;
     background-attachment: fixed;
