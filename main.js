@@ -243,3 +243,31 @@ window.onload = () => {
     cargarDemos();
     agregarAlHistorial("INTERFAZ CARGADA");
 };
+
+// ==========================================
+// 6. NAVEGACIÓN ENTRE SUBPÁGINAS (VISTAS)
+// ==========================================
+const tabControl = document.getElementById('tab-control');
+const tabHistorial = document.getElementById('tab-historial');
+const viewControl = document.getElementById('view-control');
+const viewHistorial = document.getElementById('view-historial');
+
+tabControl.addEventListener('click', () => {
+    // Mostrar Control, ocultar Historial
+    viewControl.style.display = 'block';
+    viewHistorial.style.display = 'none';
+    
+    // Cambiar estilos de los botones (Activo / Inactivo)
+    tabControl.className = 'btn btn-warning active';
+    tabHistorial.className = 'btn btn-outline-warning';
+});
+
+tabHistorial.addEventListener('click', () => {
+    // Mostrar Historial, ocultar Control
+    viewHistorial.style.display = 'block';
+    viewControl.style.display = 'none';
+    
+    // Cambiar estilos de los botones (Activo / Inactivo)
+    tabHistorial.className = 'btn btn-warning active';
+    tabControl.className = 'btn btn-outline-warning';
+});
