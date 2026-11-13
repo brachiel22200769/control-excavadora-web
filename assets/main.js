@@ -65,15 +65,17 @@ async function monitorearSalud() {
 function agregarAlHistorial(texto) {
     const li = document.createElement("li");
     const now = new Date();
-    // Punto 1: Fecha y Hora completas
     const dateStr = now.toLocaleDateString('es-MX');
     const timeStr = now.toLocaleTimeString('es-MX');
     
     li.innerHTML = `[${dateStr} ${timeStr}] <b>${texto}</b>`;
     historyList.prepend(li);
-    if (historyList.children.length > 25) historyList.removeChild(historyList.lastChild);
+    
+    // Lo limitamos exactamente a los últimos 10 movimientos limpios
+    if (historyList.children.length > 10) {
+        historyList.removeChild(historyList.lastChild);
+    }
 }
-
 // Punto 2: Función para actualizar los cristales en ambas vistas
 function actualizarUltimoMovimiento(nombreComando) {
     const colorFlash = nombreComando === "DETENIDO" ? "rgba(231, 76, 60, 1)" : "rgba(46, 204, 113, 1)";
@@ -94,8 +96,13 @@ async function enviarComando(cmdId) {
 
     const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
     
-    agregarAlHistorial(`Solicitado: ${nombreComando}`);
-    actualizarUltimoMovimiento(nombreComando); // Mandamos el texto al Liquid Glass
+    // FILTRO VISUAL: Solo lo agregamos a la lista negra si NO es "DETENIDO"
+    if (cmdId !== 13) {
+        agregarAlHistorial(`Solicitado: ${nombreComando}`);
+    }
+    
+    // El Liquid Glass de la derecha SÍ debe decir "DETENIDO" para que sepas el estado actual
+    actualizarUltimoMovimiento(nombreComando); 
 
     if (modoSimulado) return;
 
@@ -105,9 +112,8 @@ async function enviarComando(cmdId) {
 
     const res = await enviarComandoRest(cmdId);
     if (!res.ok) {
+        // Solo avisamos si hay un error crítico, borramos el spam de "Comando Aceptado"
         agregarAlHistorial(`<span style="color: #e74c3c;">[ERROR API] ${res.error}</span>`);
-    } else {
-        agregarAlHistorial(`<span style="color: #3498db;">[API] Comando Aceptado</span>`);
     }
 }
 // Botones centrales
