@@ -60,14 +60,32 @@ async function monitorearSalud() {
 }
 
 // ==========================================
-// 2. HISTORIAL Y ENVÍO DE COMANDOS
+// 2. HISTORIAL, PANELES Y ENVÍO DE COMANDOS
 // ==========================================
 function agregarAlHistorial(texto) {
     const li = document.createElement("li");
-    const timeStr = new Date().toTimeString().split(' ')[0];
-    li.innerHTML = `[${timeStr}] <b>${texto}</b>`;
+    const now = new Date();
+    // Punto 1: Fecha y Hora completas
+    const dateStr = now.toLocaleDateString('es-MX');
+    const timeStr = now.toLocaleTimeString('es-MX');
+    
+    li.innerHTML = `[${dateStr} ${timeStr}] <b>${texto}</b>`;
     historyList.prepend(li);
     if (historyList.children.length > 25) historyList.removeChild(historyList.lastChild);
+}
+
+// Punto 2: Función para actualizar los cristales en ambas vistas
+function actualizarUltimoMovimiento(nombreComando) {
+    const colorFlash = nombreComando === "DETENIDO" ? "rgba(231, 76, 60, 1)" : "rgba(46, 204, 113, 1)";
+    const displays = [
+        document.getElementById('last-move-control'),
+        document.getElementById('last-move-history')
+    ];
+    displays.forEach(d => {
+        if (d) {
+            d.innerHTML = `<span class="cmd-text" style="text-shadow: 0 0 15px ${colorFlash};">${nombreComando}</span>`;
+        }
+    });
 }
 
 async function enviarComando(cmdId) {
@@ -75,7 +93,9 @@ async function enviarComando(cmdId) {
     lastCommand = cmdId;
 
     const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
+    
     agregarAlHistorial(`Solicitado: ${nombreComando}`);
+    actualizarUltimoMovimiento(nombreComando); // Mandamos el texto al Liquid Glass
 
     if (modoSimulado) return;
 
@@ -90,7 +110,6 @@ async function enviarComando(cmdId) {
         agregarAlHistorial(`<span style="color: #3498db;">[API] Comando Aceptado</span>`);
     }
 }
-
 // Botones centrales
 document.getElementById('btn-7').addEventListener('click', function() {
     enviarComando(7); this.classList.toggle('active-toggle');
@@ -253,15 +272,15 @@ const viewControl = document.getElementById('view-control');
 const viewHistorial = document.getElementById('view-historial');
 
 tabControl.addEventListener('click', () => {
-    viewControl.style.display = 'block';
+    viewControl.style.display = 'flex';  // <-- Cambiado a flex
     viewHistorial.style.display = 'none';
-    tabControl.className = 'tab-btn active'; //
+    tabControl.className = 'tab-btn active'; 
     tabHistorial.className = 'tab-btn inactive';
 });
 
 tabHistorial.addEventListener('click', () => {
-    viewHistorial.style.display = 'block';
+    viewHistorial.style.display = 'flex'; // <-- Cambiado a flex
     viewControl.style.display = 'none';
-    tabHistorial.className = 'tab-btn active'; //
+    tabHistorial.className = 'tab-btn active'; 
     tabControl.className = 'tab-btn inactive';
 });

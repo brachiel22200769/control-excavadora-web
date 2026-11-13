@@ -9,9 +9,23 @@
     <link rel="stylesheet" href="assets/style.css">
     <style>
         /* Estilos rápidos para las pestañas de navegación */
-        .tab-btn { padding: 10px 20px; font-weight: bold; cursor: pointer; border: 2px solid #f39c12; outline: none; }
-        .tab-btn.active { background-color: #f39c12; color: #000; }
-        .tab-btn.inactive { background-color: transparent; color: #f39c12; }
+        .tab-btn {
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #f39c12;
+            outline: none;
+        }
+
+        .tab-btn.active {
+            background-color: #f39c12;
+            color: #000;
+        }
+
+        .tab-btn.inactive {
+            background-color: transparent;
+            color: #f39c12;
+        }
     </style>
 </head>
 
@@ -20,9 +34,12 @@
     <header>
         <h1>EXCAVADORA IOT</h1>
         <div class="status-indicator">
-            <div class="led-group"><span class="led-label">WSS</span><span id="led-ws" class="dot sim" title="WebSocket"></span></div>
-            <div class="led-group"><span class="led-label">API</span><span id="led-api" class="dot sim" title="API AWS"></span></div>
-            <div class="led-group"><span class="led-label">RDS</span><span id="led-rds" class="dot sim" title="Amazon RDS"></span></div>
+            <div class="led-group"><span class="led-label">WSS</span><span id="led-ws" class="dot sim"
+                    title="WebSocket"></span></div>
+            <div class="led-group"><span class="led-label">API</span><span id="led-api" class="dot sim"
+                    title="API AWS"></span></div>
+            <div class="led-group"><span class="led-label">RDS</span><span id="led-rds" class="dot sim"
+                    title="Amazon RDS"></span></div>
         </div>
     </header>
 
@@ -32,8 +49,10 @@
         <!-- MENÚ DE NAVEGACIÓN -->
         <!-- ========================================== -->
         <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
-            <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 5px 0 0 5px;">🎮 Control y Demos</button>
-            <button type="button" class="tab-btn inactive" id="tab-historial" style="border-radius: 0 5px 5px 0;">📜 Historial en Vivo</button>
+            <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 5px 0 0 5px;">🎮 Control
+                y Demos</button>
+            <button type="button" class="tab-btn inactive" id="tab-historial" style="border-radius: 0 5px 5px 0;">📜
+                Historial en Vivo</button>
         </div>
 
         <!-- ========================================== -->
@@ -41,7 +60,7 @@
         <!-- ========================================== -->
         <div id="view-control" style="display: block; width: 100%;">
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%;">
-                
+
                 <!-- Panel de Demos -->
                 <aside class="sidebar" style="width: auto;">
                     <div class="panel">
@@ -99,7 +118,19 @@
                         </div>
                     </div>
                 </section>
+
+                <aside class="sidebar-right">
+                    <div class="panel glass-panel">
+                        <h3>ÚLTIMO MOVIMIENTO</h3>
+                        <div class="last-move-display" id="last-move-control">
+                            <span class="cmd-text">ESPERANDO...</span>
+                        </div>
+                    </div>
+                </aside>
             </div>
+        </div>
+
+        </div>
         </div>
 
         <!-- ========================================== -->
@@ -110,6 +141,18 @@
                 <h3 style="text-align: center;">HISTORIAL DE OPERACIONES</h3>
                 <ul id="historyList" style="overflow-y: auto; height: 85%; padding-right: 10px;"></ul>
             </div>
+        </div>
+
+        <!-- Panel Último Movimiento (DERECHA) -->
+        <aside class="sidebar-right">
+            <div class="panel glass-panel">
+                <h3>ÚLTIMO MOVIMIENTO</h3>
+                <div class="last-move-display" id="last-move-history">
+                    <span class="cmd-text">ESPERANDO...</span>
+                </div>
+            </div>
+        </aside>
+
         </div>
 
     </main>

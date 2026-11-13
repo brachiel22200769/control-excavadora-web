@@ -341,3 +341,46 @@ header h1 { font-size: 1.5rem; color: #f1c40f; text-shadow: 2px 2px #000; margin
         gap: 10px;
     }
 }
+
+/* ==========================================
+   PANEL DERECHO: ÚLTIMO MOVIMIENTO (LIQUID GLASS)
+   ========================================== */
+.sidebar-right {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+.glass-panel {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.1) !important;
+    height: 100%;
+}
+.glass-panel h3 {
+    background: rgba(0, 0, 0, 0.5); /* Título translúcido */
+    color: #f1c40f;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.last-move-display {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+}
+.last-move-display .cmd-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(243, 156, 18, 1); /* Brillo naranja a las letras */
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+    .sidebar-right { width: 100%; max-width: 800px; order: 3; margin-bottom: 20px; }
+    .glass-panel { height: 120px; }
+}
