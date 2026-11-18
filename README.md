@@ -1,83 +1,99 @@
 🚜 Excavadora IoT - Sistema de Teleoperación Completo
 Este repositorio contiene el ecosistema completo (Frontend y Backend) para el control en tiempo real de un vehículo IoT (Excavadora controlada mediante un microcontrolador ESP8266 y registros de desplazamiento 74HC595). El proyecto integra una interfaz web responsiva con una arquitectura de microservicios en la nube utilizando FastAPI, WebSockets y una base de datos relacional.
 
-🏗️ Arquitectura del Proyecto
-El sistema se divide en dos componentes principales que se comunican de forma segura mediante túneles:
+🌟 Ampliación 4.2 - Mejoras de Interfaz y Lógica en Tiempo Real
+Esta versión integra mejoras significativas en la experiencia de usuario (UI/UX) y la eficiencia del servidor:
 
-💻 Frontend: Control de Excavadora Web
-Aplicación responsiva (Mobile First) diseñada para controlar el vehículo en tiempo real mediante el consumo de servicios REST y conexión constante por WebSocket.
+Efecto Liquid Glass: Paneles laterales de cristal translúcido para indicadores de estado e interfaces de catálogo.
 
-Tecnologías: HTML5, CSS3, Bootstrap 5 y Vanilla JavaScript (Módulos ES6).
+Animación Fantasma (Ghosting): Los joysticks virtuales y botones del frontend reaccionan físicamente a los comandos recibidos vía WebSocket durante la ejecución de rutinas automáticas (Demos).
 
-Estructura del Código:
+Filtro de Historial Inteligente: Lógica implementada en db_service.py y main.js para discriminar eventos inactivos (Comando 13 - Detenido), optimizando la capacidad de la tabla visual a 10 movimientos reales puros.
 
-index.html: Interfaz de usuario semántica y adaptable.
+Refactorización de Assets: Aislamiento total de estilos, lógica y variables de entorno para un despliegue limpio y mantenible.
 
-style.css: Estilos visuales, adaptaciones táctiles y diseño de los joysticks.
+🏗️ Arquitectura del Proyecto y Mapa de Módulos
+El sistema se divide en dos componentes principales estructurados bajo un modelo de separación de responsabilidades:
 
-config.js: Variables de entorno y rutas de conexión hacia AWS.
+💻 Frontend: Control Web
+Estructura organizada para despliegue estático o mediante GitHub Pages.
 
-api.js: Cliente REST para peticiones asíncronas (Fetch/Async-Await).
-
-main.js: Lógica principal de UI, gestión de conexión WebSocket y catálogos de Demos.
-
+Plaintext
+/control-excavadora-web
+ ├── 📁 IMG/
+ │    └── Fondo.jpg           # Recursos gráficos (Background optimizado)
+ ├── 📁 assets/
+ │    ├── style.css           # Estilos visuales, Liquid Glass y diseño responsivo
+ │    ├── main.js             # Lógica Core: UI, WebSockets, Historial y UI Ghosting
+ │    ├── api.js              # Cliente REST (Fetch/Async-Await)
+ │    └── config.js           # Contratos de URLs para Ngrok y AWS
+ ├── index.html               # Semántica y layout principal
+ └── favicon.ico
 ⚙️ Backend: API REST & WebSocket
-Motor lógico y de persistencia desarrollado para gestionar el control manual, el historial de operaciones y la ejecución de rutinas automáticas secuenciales.
+Estructura persistente en Python (FastAPI).
 
-Tecnologías: Python, FastAPI, WebSockets y MySQL.
+Plaintext
+/websocket_iot/app
+ ├── main.py                  # Endpoints REST, WebSockets y Middlewares
+ └── 📁 services/
+      └── db_service.py       # Capa de base de datos, filtros de historial y Stored Procedures
+☁️ Contratos de Infraestructura (AWS & Redes)
+El proyecto requiere una cadena de servicios activa para garantizar la telemetría bidireccional y la persistencia de datos:
 
-Infraestructura y Despliegue: La API se ejecuta de manera persistente en Amazon EC2 (Windows Server 2025) y almacena sus datos de forma segura en Amazon RDS. Los puertos locales están expuestos mediante túneles seguros de Ngrok para cumplir con los requerimientos públicos de HTTPS y WSS.
+Amazon EC2 (Windows Server 2025): Servidor host para la API ASGI de Python. Mantiene la lógica del negocio en operación 24/7.
 
-📚 Documentación de la API (HTTP REST)
-El backend integra 21 Stored Procedures administrados a través de endpoints convencionales (GET, POST, PUT, DELETE), organizados por categorías funcionales.
+Amazon RDS (MySQL): Motor de base de datos relacional para gestionar la tabla vehiculo_iot, incluyendo el historial de transacciones y los catálogos de rutinas (Demos).
 
-La documentación completa e interactiva, lista para ejecutar pruebas directas, está expuesta de forma pública a través de:
-👉 Swagger UI - API IoT (Accesible en la ruta /docs del servidor desplegado).
+Ngrok Tunnels: Proveedor de túneles inversos para exponer de forma pública y segura (HTTPS / WSS) los puertos del servidor EC2, evadiendo restricciones de NAT corporativas o de proveedores de internet.
 
-🔌 Documentación de WebSocket (WSS)
-El canal de monitoreo bidireccional y telemetría en tiempo real opera a través de un WebSocket seguro. Debido a que Swagger UI no documenta conexiones WSS de forma nativa, la especificación de eventos se detalla a continuación:
+🚀 Pasos de Ejecución
+1. Inicialización de Backend (AWS EC2)
+Iniciar la instancia de base de datos en AWS RDS.
 
-URL de Conexión: wss://mutual-spearhead-factoid.ngrok-free.dev/ws
+Acceder al servidor EC2 y activar el entorno virtual (.venv).
 
-Comportamiento Inicial: Inmediatamente al establecer la conexión, el servidor consulta RDS y devuelve el último estado del vehículo para sincronizar la interfaz.
+Ejecutar el servidor ASGI:
 
-📦 Estructura de Mensajes JSON (Eventos)
-1. Evento de Estado (Movimiento Individual Manual)
-Se emite automáticamente a todos los clientes conectados tras recibir un POST válido en /api/vehiculos/{id}/movimiento. Este evento sí se registra en el historial de la base de datos.
+Bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+Levantar el túnel seguro de Ngrok apuntando al puerto local:
 
-JSON
-{
-  "vehiculo": 1,
-  "status": 2,
-  "comando_nombre": "AVANZANDO"
-}
-2. Eventos de Ejecución Autónoma (DEMO)
-Se emiten en cascada al iniciar una rutina programada mediante un POST a /api/vehiculos/{id}/demo/{id_demo}/iniciar. Estos comandos modifican el estado visual y los actuadores físicos, pero NO ensucian la tabla del historial en la base de datos.
+Bash
+ngrok http 8000
+2. Configuración de Frontend
+Copiar las URLs generadas por Ngrok (HTTPS y WSS).
 
-Inicio de secuencia DEMO:
+Actualizar los contratos en el archivo assets/config.js:
 
-JSON
-{ "type": "DEMO_INICIO", "vehiculo": 1 }
-Ejecución de un paso activo:
+JavaScript
+export const CONFIG = {
+    API_BASE: "https://<tu-url-ngrok>.ngrok-free.dev/api",
+    WS_URL: "wss://<tu-url-ngrok>.ngrok-free.dev/ws",
+    VEHICULO_ID: 1
+};
+Lanzar el index.html mediante un servidor local (Live Server en VS Code) o desplegar el repositorio en GitHub Pages.
 
-JSON
-{ "status": 10, "duracion": 1500 }
-Pausa programada entre movimientos:
+✅ Criterios de Comprobación y Testing
+Fase 1: Carga Inicial (Initial Load)
+Health Check de LEDs: Al cargar la página, los indicadores superiores (WSS, API, RDS) deben pasar de color ámbar a verde intenso.
 
-JSON
-{ "status": 13, "pausa": 300 }
-Finalización exitosa de la rutina:
+Sincronización de Último Estado: El panel de Liquid Glass derecho ("ÚLTIMO MOVIMIENTO") debe iluminarse con el comando registrado previamente en la base de datos (Ej. DETENIDO).
 
-JSON
-{ "status": 13, "type": "DEMO_FIN" }
-3. Interrupción / Cancelación de Emergencia
-Si se lanza una petición POST al endpoint de cancelación durante la ejecución de una DEMO, el ciclo asíncrono se rompe inmediatamente y el servidor transmite un estado de seguridad.
+Catálogo Dinámico: El menú desplegable de "CATÁLOGO DE DEMOS" debe rellenarse automáticamente consultando los registros de RDS a través de la API.
 
-JSON
-{ "status": 13 } // 13 = Vehículo Detenido
-🚀 Requisitos y Ejecución Local
-Backend: Requiere activar el entorno virtual (.venv) e instalar las dependencias de Python. Se inicializa el servidor ASGI localmente utilizando uvicorn app.main:app --host 0.0.0.0 --port 8000.
+Fase 2: Actualización en Tiempo Real (Real-Time Telemetry)
+Filtrado de Historial: Al operar los joysticks libremente, la lista de "HISTORIAL DE OPERACIONES" debe actualizarse al instante mostrando la hora y comando exacto, manteniendo un máximo de 10 registros limpios (omitiendo por completo el comando 13 "DETENIDO").
 
-Frontend: Al utilizar módulos de ES6, la aplicación no requiere Node.js de fondo, pero debe ejecutarse a través de un servidor local (por ejemplo, la extensión Live Server en VS Code) para resolver correctamente las importaciones de JavaScript sin ser bloqueado por el navegador.
+Animación Fantasma (Ejecución de Demos): Al seleccionar y dar "EJECUTAR" a una demo, el usuario debe soltar el ratón y observar cómo:
+
+Los joysticks virtuales se mueven físicamente en la pantalla.
+
+Los botones centrales destellan en amarillo según la secuencia.
+
+El panel de Liquid Glass refleja el cambio de comandos a alta velocidad.
+
+El historial inyecta los nuevos registros con la etiqueta y color especial [DEMO].
+
+Corte de Emergencia: Al presionar "DETENER TODO (13)" o "CANCELAR", la secuencia autónoma debe abortarse de inmediato, el historial dejará de registrar eventos de Demo, y el Liquid Glass marcará DETENIDO en color rojo.
 
 Desarrollado por Erick Brachiel Silva Barriga - Instituto Tecnológico de Pachuca
