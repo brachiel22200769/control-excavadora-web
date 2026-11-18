@@ -1,5 +1,4 @@
 import { CONFIG } from './config.js';
-import { enviarComandoRest, checkApiHealth } from './api.js';
 import { enviarComandoRest, checkApiHealth, obtenerDemos, crearDemoRest, eliminarDemoRest } from './api.js';
 
 // ==========================================
