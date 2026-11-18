@@ -1,5 +1,6 @@
 import { CONFIG } from './config.js';
 import { enviarComandoRest, checkApiHealth } from './api.js';
+import { enviarComandoRest, checkApiHealth, obtenerDemos, crearDemoRest, eliminarDemoRest } from './api.js';
 
 // ==========================================
 // REFERENCIAS HTML
@@ -30,7 +31,7 @@ function iniciarWebSocket() {
             wsDot.className = "dot on";
         };
 
-        // AQUI ESTÁ LA MAGIA: Escuchamos los comandos en tiempo real
+        // Escucha los mensajes entrantes del WebSocket
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
@@ -108,7 +109,8 @@ function actualizarUltimoMovimiento(nombreComando) {
     const colorFlash = nombreComando === "DETENIDO" ? "rgba(231, 76, 60, 1)" : "rgba(46, 204, 113, 1)";
     const displays = [
         document.getElementById('last-move-control'),
-        document.getElementById('last-move-history')
+        document.getElementById('last-move-history'),
+        document.getElementById('last-move-admin') // <--- ¡AQUÍ ESTÁ EL TERCERO!
     ];
     displays.forEach(d => {
         if (d) {
@@ -213,7 +215,81 @@ document.querySelector('.btn-clear').addEventListener('click', async () => {
         console.error("Error al cancelar demo", e);
     }
 });
+// ==========================================
+// LÓGICA DE ADMINISTRACIÓN DE DEMOS
+// ==========================================
+async function cargarDemosAdmin() {
+    const adminList = document.getElementById('adminDemosList');
+    if (!adminList) return;
 
+    try {
+        // Usamos la misma función fetch que alimenta el select del Control
+        const resp = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demos`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!resp.ok) throw new Error("Error en red");
+        const demos = await resp.json();
+
+        adminList.innerHTML = '';
+
+        demos.forEach(demo => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="demo-name">ID: ${demo.id_demo} - ${demo.nombre}</span>
+                <div class="admin-btns">
+                    <button class="btn btn-edit" onclick="editarDemo(${demo.id_demo})">✏️ MOVIMIENTOS</button>
+                    <button class="btn btn-delete" onclick="borrarDemo(${demo.id_demo}, '${demo.nombre}')">🗑️ BORRAR</button>
+                </div>
+            `;
+            adminList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Fallo al cargar la lista de admin:", error);
+    }
+}
+
+// Funciones globales ancladas a Window para que los botones HTML las detecten
+window.borrarDemo = async (idDemo, nombre) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar permanentemente la demo "${nombre}" y todos sus movimientos?`)) {
+        const exito = await eliminarDemoRest(idDemo);
+        if (exito) {
+            agregarAlHistorial(`[ADMIN] Demo ${idDemo} eliminada`);
+            await cargarDemos();      // Actualiza el Select de la vista 1
+            await cargarDemosAdmin(); // Actualiza la Lista de la vista 3
+        } else {
+            alert("Error al eliminar la demo desde la API.");
+        }
+    }
+};
+
+window.editarDemo = (idDemo) => {
+    // Aquí conectaremos la edición de los 'demo_movimientos' en el siguiente paso
+    alert(`Se abrirá el editor de movimientos para la Demo ID: ${idDemo}`);
+};
+
+// Evento para el botón de CREAR nueva demo
+const btnCrearDemo = document.getElementById('btn-crear-demo');
+if (btnCrearDemo) {
+    btnCrearDemo.addEventListener('click', async () => {
+        const input = document.getElementById('inputNuevaDemo');
+        const nombre = input.value.trim();
+
+        if (!nombre) {
+            alert("Escribe un nombre para la nueva demo.");
+            return;
+        }
+
+        const exito = await crearDemoRest(nombre);
+        if (exito) {
+            input.value = '';
+            agregarAlHistorial(`[ADMIN] Nueva demo creada: ${nombre}`);
+            await cargarDemos();      // Actualiza el Select
+            await cargarDemosAdmin(); // Actualiza la Lista
+        } else {
+            alert("Hubo un error al guardar la demo en la base de datos.");
+        }
+    });
+}
 // ==========================================
 // 4. LÓGICA DE LOS JOYSTICKS
 // ==========================================
@@ -293,31 +369,31 @@ window.onload = () => {
     monitorearSalud();
     setInterval(monitorearSalud, 10000);
     cargarDemos();
+    cargarDemosAdmin();
     agregarAlHistorial("INTERFAZ CARGADA");
 };
 
 // ==========================================
-// 6. NAVEGACIÓN ENTRE SUBPÁGINAS (VISTAS)
+// 6. NAVEGACIÓN ENTRE SUBPÁGINAS (3 VISTAS)
 // ==========================================
-const tabControl = document.getElementById('tab-control');
-const tabHistorial = document.getElementById('tab-historial');
-const viewControl = document.getElementById('view-control');
-const viewHistorial = document.getElementById('view-historial');
+const tabs = {
+    control: { btn: document.getElementById('tab-control'), view: document.getElementById('view-control'), display: 'block' },
+    historial: { btn: document.getElementById('tab-historial'), view: document.getElementById('view-historial'), display: 'flex' },
+    admin: { btn: document.getElementById('tab-admin'), view: document.getElementById('view-admin'), display: 'flex' }
+};
 
-tabControl.addEventListener('click', () => {
-    viewControl.style.display = 'flex';  // <-- Cambiado a flex
-    viewHistorial.style.display = 'none';
-    tabControl.className = 'tab-btn active';
-    tabHistorial.className = 'tab-btn inactive';
-});
+function cambiarPestana(tabActiva) {
+    Object.values(tabs).forEach(tab => {
+        tab.btn.className = 'tab-btn inactive';
+        tab.view.style.display = 'none';
+    });
+    tabs[tabActiva].btn.className = 'tab-btn active';
+    tabs[tabActiva].view.style.display = tabs[tabActiva].display;
+}
 
-tabHistorial.addEventListener('click', () => {
-    viewHistorial.style.display = 'flex'; // <-- Cambiado a flex
-    viewControl.style.display = 'none';
-    tabHistorial.className = 'tab-btn active';
-    tabControl.className = 'tab-btn inactive';
-});
-
+tabs.control.btn.addEventListener('click', () => cambiarPestana('control'));
+tabs.historial.btn.addEventListener('click', () => cambiarPestana('historial'));
+tabs.admin.btn.addEventListener('click', () => cambiarPestana('admin'));
 
 // ==========================================
 // 7. ANIMACIÓN FANTASMA PARA LAS DEMOS (PUNTO 3)

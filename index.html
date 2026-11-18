@@ -49,10 +49,12 @@
         <!-- MENÚ DE NAVEGACIÓN -->
         <!-- ========================================== -->
         <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
-            <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 5px 0 0 5px;">🎮 Control
+            <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 8px 0 0 8px;">🎮 Control
                 y Demos</button>
-            <button type="button" class="tab-btn inactive" id="tab-historial" style="border-radius: 0 5px 5px 0;">📜
-                Historial en Vivo</button>
+            <button type="button" class="tab-btn inactive" id="tab-historial" style="border-radius: 0;">📜 Historial en
+                Vivo</button>
+            <button type="button" class="tab-btn inactive" id="tab-admin" style="border-radius: 0 8px 8px 0;">⚙️
+                Administración</button>
         </div>
 
         <!-- ========================================== -->
@@ -152,6 +154,44 @@
                 <div class="panel glass-panel">
                     <h3>ÚLTIMO MOVIMIENTO</h3>
                     <div class="last-move-display" id="last-move-history">
+                        <span class="cmd-text">ESPERANDO...</span>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VISTA 3: ADMINISTRACIÓN -->
+        <!-- ========================================== -->
+        <div id="view-admin"
+            style="display: none; width: 100%; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap;">
+
+            <!-- Panel Central de Admin -->
+            <div class="sidebar" style="width: 100%; max-width: 600px;">
+                <div class="panel" style="height: 60vh; padding: 20px; overflow-y: auto;">
+                    <h3 style="text-align: center; margin-bottom: 20px;">GESTIÓN DE DEMOS</h3>
+
+                    <!-- Formulario rápido para crear -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                        <input type="text" id="inputNuevaDemo" class="demo-select"
+                            placeholder="Nombre de la nueva demo..." style="flex-grow: 1;">
+                        <button class="btn btn-play" id="btn-crear-demo" style="width: auto;">➕ CREAR</button>
+                    </div>
+
+                    <!-- Lista de Demos -->
+                    <ul id="adminDemosList"
+                        style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Aquí se inyectarán las demos con JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Panel Último Movimiento (DERECHA - Liquid Glass) -->
+            <aside class="sidebar-right">
+                <div class="panel glass-panel">
+                    <h3>ÚLTIMO MOVIMIENTO</h3>
+                    <div class="last-move-display" id="last-move-admin">
                         <span class="cmd-text">ESPERANDO...</span>
                     </div>
                 </div>

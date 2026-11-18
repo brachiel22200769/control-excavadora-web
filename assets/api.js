@@ -33,3 +33,28 @@ export async function checkApiHealth() {
         return resp.ok;
     } catch (e) { return false; }
 }
+
+// Página de administración de demos: crear y eliminar demos
+export async function crearDemoRest(nombre, descripcion = "Secuencia personalizada") {
+    try {
+        const res = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, descripcion })
+        });
+        return res.ok;
+    } catch (e) {
+        return false;
+    }
+}
+
+export async function eliminarDemoRest(idDemo) {
+    try {
+        const res = await fetch(`${CONFIG.API_BASE}/vehiculos/${CONFIG.VEHICULO_ID}/demo/${idDemo}`, {
+            method: 'DELETE'
+        });
+        return res.ok;
+    } catch (e) {
+        return false;
+    }
+}
