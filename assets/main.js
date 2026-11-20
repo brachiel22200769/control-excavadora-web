@@ -119,7 +119,8 @@ function actualizarUltimoMovimiento(nombreComando) {
 }
 
 async function enviarComando(cmdId) {
-    if (cmdId !== 13 && cmdId === lastCommand) return;
+    const esBotonToggle = [5, 7, 8].includes(cmdId);
+    if (!esBotonToggle && cmdId !== 13 && cmdId === lastCommand) return;
     lastCommand = cmdId;
 
     const nombreComando = nombresAcciones[cmdId] || `COMANDO ${cmdId}`;
@@ -357,7 +358,7 @@ function setupJoystick(joystickId, mapConfig) {
     window.addEventListener('touchend', onEnd);
 }
 
-setupJoystick('joyLeft', { up: 2, down: 3, left: 4, right: 1 });
+setupJoystick('joyLeft', { up: 2, down: 3, left: 1, right: 4 });
 setupJoystick('joyRight', { up: 10, down: 11, left: 9, right: 12 });
 
 // ==========================================
