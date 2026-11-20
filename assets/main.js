@@ -15,8 +15,8 @@ let lastCommand = 13;
 
 const nombresAcciones = {
     1: "GIRANDO IZQUIERDA", 2: "AVANZANDO", 3: "RETROCEDIENDO", 4: "GIRANDO DERECHA",
-    5: "SONIDO ON/OFF", 7: "ROTANDO CABINA IZQ", 8: "MODO AUX",
-    9: "LUCES ON/OFF", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "ROTANDO CABINA DER", 13: "DETENIDO"
+    5: "SONIDO ON/OFF", 7: "LUCES ON/OFF", 8: "MODO AUX",
+    9: "ROTANDO CABINA IZQ", 10: "SUBIR BRAZO", 11: "BAJAR BRAZO", 12: "ROTANDO CABINA DER", 13: "DETENIDO"
 };
 
 // ==========================================
