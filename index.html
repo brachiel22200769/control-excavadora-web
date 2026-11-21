@@ -4,202 +4,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Central de Control - Excavadora IoT</title>
+    <title>Plataforma IoT - Control, Monitoreo y Administración</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/style.css">
-    <style>
-        /* Estilos rápidos para las pestañas de navegación */
-        .tab-btn {
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            border: 2px solid #f39c12;
-            outline: none;
-        }
-
-        .tab-btn.active {
-            background-color: #f39c12;
-            color: #000;
-        }
-
-        .tab-btn.inactive {
-            background-color: transparent;
-            color: #f39c12;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/admin-theme.css">
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-    <header>
-        <h1>EXCAVADORA IOT</h1>
-        <div class="status-indicator">
-            <div class="led-group"><span class="led-label">WSS</span><span id="led-ws" class="dot sim"
-                    title="WebSocket"></span></div>
-            <div class="led-group"><span class="led-label">API</span><span id="led-api" class="dot sim"
-                    title="API AWS"></span></div>
-            <div class="led-group"><span class="led-label">RDS</span><span id="led-rds" class="dot sim"
-                    title="Amazon RDS"></span></div>
+    <!-- ========================================== -->
+    <!-- ENCABEZADO GLOBAL CON LEDS INDEPENDIENTES -->
+    <!-- ========================================== -->
+    <header class="topbar-iot py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <h1 class="h4 mb-0 text-warning fw-bold">🚧 EXCAVADORA IOT</h1>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="status-indicator d-flex align-items-center gap-3">
+                <div class="led-group" title="Sesión WebSocket del navegador (no acredita ESP8266 físico)">
+                    <span class="led-label">WSS</span>
+                    <span id="led-ws" class="dot sim"></span>
+                </div>
+                <div class="led-group" title="Disponibilidad API FastAPI">
+                    <span class="led-label">API</span>
+                    <span id="led-api" class="dot sim"></span>
+                </div>
+                <div class="led-group" title="Diagnóstico Amazon RDS">
+                    <span class="led-label" id="rds-label">RDS</span>
+                    <span id="led-rds" class="dot sim"></span>
+                </div>
+            </div>
+
+            <span id="headerUserPill" class="user-pill" style="display:none;"></span>
+            <button type="button" id="btnLogout" class="btn btn-sm btn-outline-danger fw-bold" style="display:none;">Salir</button>
         </div>
     </header>
 
-    <main class="dashboard" style="display: flex; flex-direction: column; align-items: center;">
+    <main class="container-fluid py-4 flex-grow-1">
 
         <!-- ========================================== -->
-        <!-- MENÚ DE NAVEGACIÓN -->
+        <!-- 1. PANTALLA DE LOGIN / REGISTRO / INVITADO -->
         <!-- ========================================== -->
-        <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
-            <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 8px 0 0 8px;">🎮 Control
-                y Demos</button>
-            <button type="button" class="tab-btn inactive" id="tab-historial" style="border-radius: 0;">📜 Historial en
-                Vivo</button>
-            <button type="button" class="tab-btn inactive" id="tab-admin" style="border-radius: 0 8px 8px 0;">⚙️
-                Administración</button>
-        </div>
+        <section id="view-auth" class="container" style="max-width: 960px;">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-5">
+                    <div class="iot-card p-4">
+                        <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active fw-bold" data-bs-toggle="pill" data-bs-target="#paneLogin" type="button">Iniciar Sesión</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link fw-bold text-warning" data-bs-toggle="pill" data-bs-target="#paneRegister" type="button">Registrarse</button>
+                            </li>
+                        </ul>
 
-        <!-- ========================================== -->
-        <!-- VISTA 1: CONTROL Y DEMOS -->
-        <!-- ========================================== -->
-        <div id="view-control" style="display: block; width: 100%;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%;">
+                        <div class="tab-content">
+                            <!-- LOGIN -->
+                            <div class="tab-pane fade show active" id="paneLogin">
+                                <form id="formLogin">
+                                    <div class="mb-3">
+                                        <label for="loginUsername" class="form-label small fw-bold">Usuario</label>
+                                        <input type="text" id="loginUsername" class="form-control" placeholder="Ej. brach o admin" required autocomplete="username">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="loginPassword" class="form-label small fw-bold">Contraseña</label>
+                                        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                                    </div>
+                                    <div id="authError" class="alert alert-danger py-2 small" style="display:none;"></div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-warning fw-bold text-dark">Entrar a la Plataforma</button>
+                                    </div>
+                                </form>
 
-                <!-- Panel de Demos -->
-                <aside class="sidebar" style="width: auto;">
-                    <div class="panel">
-                        <h3>CATÁLOGO DE DEMOS</h3>
-                        <div class="demo-builder">
-                            <select id="demoSelect" class="demo-select">
-                                <option value="">Cargando demos...</option>
-                            </select>
-                            <div class="demo-controls">
-                                <button class="btn btn-play" id="btn-run-demo">▶ EJECUTAR</button>
-                                <button class="btn btn-clear" id="btn-cancel-demo">⏹ CANCELAR</button>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Control Remoto -->
-                <section class="main-control-area">
-                    <div class="remote-body">
-                        <div class="top-plate">TRUCK CONTROL</div>
-                        <div class="control-grid">
-                            <!-- JOYSTICK IZQUIERDO -->
-                            <div class="joy-wrap">
-                                <div class="joy-label">ORUGAS</div>
-                                <div class="d-pad-ring">
-                                    <div class="dir-hint up"><b>▲</b>Fwd</div>
-                                    <div class="dir-hint down">Rev<b>▼</b></div>
-                                    <div class="dir-hint left"><b>◀</b>Izq</div>
-                                    <div class="dir-hint right">Der<b>▶</b></div>
-                                    <div class="joy-stick" id="joyLeft"></div>
+                                <hr class="border-secondary my-3">
+                                <div class="text-center">
+                                    <p class="small text-secondary mb-2">¿Solo quieres probar una excavadora de exhibición?</p>
+                                    <button type="button" id="btnModoInvitado" class="btn btn-outline-warning w-100 fw-bold">
+                                        ⏱️ Modo Invitado (Prueba 5 min)
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- BOTONES CENTRALES -->
-                            <div class="center-panel">
-                                <button id="btn-7" class="btn-center">💡 LUCES</button>
-                                <button id="btn-5" class="btn-center">🔊 SONIDO</button>
-                                <button id="btn-8" class="btn-center">✨ AUX</button>
+                            <!-- REGISTRO (Solo rol USUARIO) -->
+                            <div class="tab-pane fade" id="paneRegister">
+                                <form id="formRegister">
+                                    <div class="mb-2">
+                                        <label for="regNombre" class="form-label small fw-bold">Nombre completo</label>
+                                        <input type="text" id="regNombre" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="regCorreo" class="form-label small fw-bold">Correo electrónico</label>
+                                        <input type="email" id="regCorreo" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="regUsername" class="form-label small fw-bold">Nombre de usuario</label>
+                                        <input type="text" id="regUsername" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="regPassword" class="form-label small fw-bold">Contraseña (mín. 6 caracteres)</label>
+                                        <input type="password" id="regPassword" class="form-control form-control-sm" minlength="6" required>
+                                    </div>
+                                    <div id="registerError" class="alert alert-danger py-2 small" style="display:none;"></div>
+                                    <div id="registerSuccess" class="alert alert-success py-2 small" style="display:none;"></div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success fw-bold">Crear Cuenta de Cliente</button>
+                                    </div>
+                                </form>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- JOYSTICK DERECHO -->
-                            <div class="joy-wrap">
-                                <div class="joy-label">CABINA / BRAZO</div>
-                                <div class="d-pad-ring">
-                                    <div class="dir-hint up"><b>▲</b>Sube</div>
-                                    <div class="dir-hint down">Baja<b>▼</b></div>
-                                    <div class="dir-hint left"><b>◀</b>C.Izq</div>
-                                    <div class="dir-hint right">C.Der<b>▶</b></div>
-                                    <div class="joy-stick" id="joyRight"></div>
+                <!-- CATÁLOGO PÚBLICO DE MODELOS -->
+                <div class="col-lg-7">
+                    <div class="iot-card p-4">
+                        <h5 class="text-warning fw-bold mb-1">🚜 Catálogo de Vehículos IoT</h5>
+                        <p class="small text-secondary mb-3">Modelos disponibles con control en tiempo real sobre AWS y ESP8266.</p>
+                        <div id="publicCatalogoGrid" class="row g-3">
+                            <div class="small text-secondary">Cargando catálogo...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 2. APLICACIÓN DE USUARIO / INVITADO -->
+        <!-- ========================================== -->
+        <section id="view-user-app" style="display:none;">
+            <div class="container-fluid" style="max-width: 1280px;">
+
+                <!-- Banner exclusivo de Invitado con cronómetro -->
+                <div id="guestBanner" class="guest-banner justify-content-between align-items-center flex-wrap gap-2 mb-3" style="display:none;">
+                    <div>⏱️ MODO INVITADO (EXHIBICIÓN) · Tiempo restante: <span id="guestCountdown" class="fs-5 ms-1">05:00</span></div>
+                    <button type="button" id="btnEndGuest" class="btn btn-sm btn-dark fw-bold">Finalizar Prueba</button>
+                </div>
+
+                <!-- Selector de vehículo (para usuarios con 1 o más unidades) -->
+                <div id="vehicleSelectorWrap" class="iot-card p-3 mb-3 flex-wrap justify-content-between align-items-center gap-2" style="display:none;">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <label for="userVehicleSelect" class="fw-bold text-warning mb-0">🚜 Mi Vehículo Activo:</label>
+                        <select id="userVehicleSelect" class="form-select form-select-sm" style="width:auto; min-width:260px;"></select>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="activeVehicleBadge" class="badge bg-dark border border-warning text-warning"></span>
+                        <span id="espHardwareBadge" class="badge bg-secondary">ESP8266: Sin señal</span>
+                    </div>
+                </div>
+
+                <!-- Navegación 3 vistas de Usuario (o Control/Historial/Catálogo para Invitado) -->
+                <div class="d-flex justify-content-center flex-wrap mb-4">
+                    <button type="button" class="tab-btn active" id="tab-control" style="border-radius: 8px 0 0 8px;">🎮 Control y Demos</button>
+                    <button type="button" class="tab-btn inactive" id="tab-historial">📜 Historial en Vivo</button>
+                    <button type="button" class="tab-btn inactive" id="tab-mis-demos" style="border-radius: 0 8px 8px 0;">🎬 Mis Demos</button>
+                    <button type="button" class="tab-btn inactive" id="tab-catalogo-inv" style="display:none; border-radius: 0 8px 8px 0;">📋 Catálogo</button>
+                </div>
+
+                <div id="noVehiclesAlert" class="alert alert-warning text-center mx-auto" style="display:none; max-width:600px;">
+                    Aún no tienes ningún vehículo IoT asignado a tu cuenta. Solicita al administrador la asignación de tu unidad.
+                </div>
+
+                <!-- VISTA 1: CONTROL Y DEMOS -->
+                <div id="view-control" style="display: block;">
+                    <div id="userControlContent" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+                        <aside class="sidebar" style="width: auto;">
+                            <div class="panel">
+                                <h3>CATÁLOGO DE DEMOS</h3>
+                                <div class="demo-builder">
+                                    <select id="demoSelect" class="demo-select" aria-label="Seleccionar demo">
+                                        <option value="">Cargando demos...</option>
+                                    </select>
+                                    <div class="demo-controls">
+                                        <button type="button" class="btn btn-play" id="btn-run-demo">▶ EJECUTAR</button>
+                                        <button type="button" class="btn btn-clear" id="btn-cancel-demo">⏹ CANCELAR</button>
+                                    </div>
                                 </div>
                             </div>
+                        </aside>
+
+                        <section class="main-control-area">
+                            <div class="remote-body">
+                                <div class="top-plate">TRUCK CONTROL</div>
+                                <div class="text-center mb-2">
+                                    <span id="telemetryAck" class="ack-pill text-secondary">Listo para operar</span>
+                                </div>
+                                <div class="control-grid">
+                                    <div class="joy-wrap">
+                                        <div class="joy-label">ORUGAS</div>
+                                        <div class="d-pad-ring">
+                                            <div class="dir-hint up"><b>▲</b>Fwd</div>
+                                            <div class="dir-hint down">Rev<b>▼</b></div>
+                                            <div class="dir-hint left"><b>◀</b>Izq</div>
+                                            <div class="dir-hint right">Der<b>▶</b></div>
+                                            <div class="joy-stick" id="joyLeft"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="center-panel">
+                                        <button type="button" id="btn-7" class="btn-center">💡 LUCES</button>
+                                        <button type="button" id="btn-5" class="btn-center">🔊 SONIDO</button>
+                                        <button type="button" id="btn-8" class="btn-center">✨ AUX</button>
+                                    </div>
+
+                                    <div class="joy-wrap">
+                                        <div class="joy-label">CABINA / BRAZO</div>
+                                        <div class="d-pad-ring">
+                                            <div class="dir-hint up"><b>▲</b>Sube</div>
+                                            <div class="dir-hint down">Baja<b>▼</b></div>
+                                            <div class="dir-hint left"><b>◀</b>C.Izq</div>
+                                            <div class="dir-hint right">C.Der<b>▶</b></div>
+                                            <div class="joy-stick" id="joyRight"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom-plate">
+                                    <button type="button" id="btn-stop">⏹ DETENER TODO (13)</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <aside class="sidebar-right">
+                            <div class="panel glass-panel">
+                                <h3>ÚLTIMO MOVIMIENTO</h3>
+                                <div class="last-move-display" id="last-move-control">
+                                    <span class="cmd-text">ESPERANDO...</span>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <!-- VISTA 2: HISTORIAL EN VIVO (Máx 10 registros persistidos en RDS) -->
+                <div id="view-historial" style="display: none; justify-content: center; align-items: flex-start; gap: 30px; flex-wrap: wrap;">
+                    <div class="iot-card p-3 flex-grow-1" style="max-width: 720px; width: 100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-warning fw-bold mb-0">📜 Últimos 10 Movimientos (RDS)</h5>
+                            <button type="button" id="btnRefreshHistory" class="btn btn-sm btn-outline-warning">🔄 Actualizar</button>
                         </div>
-                        <div class="bottom-plate">
-                            <button id="btn-stop">⏹ DETENER TODO (13)</button>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-iot align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha y Hora</th>
+                                        <th>Comando</th>
+                                        <th>Código</th>
+                                        <th>Origen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr><td colspan="4" class="text-center text-secondary py-3">Cargando historial...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </section>
 
-                <aside class="sidebar-right">
-                    <div class="panel glass-panel">
-                        <h3>ÚLTIMO MOVIMIENTO</h3>
-                        <div class="last-move-display" id="last-move-control">
-                            <span class="cmd-text">ESPERANDO...</span>
+                    <aside class="sidebar-right">
+                        <div class="panel glass-panel">
+                            <h3>ÚLTIMO MOVIMIENTO</h3>
+                            <div class="last-move-display" id="last-move-history">
+                                <span class="cmd-text">ESPERANDO...</span>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+
+                <!-- VISTA 3 (USUARIO): MIS DEMOS + EDITOR DE PASOS -->
+                <div id="view-mis-demos" style="display: none; justify-content: center; align-items: flex-start; gap: 30px; flex-wrap: wrap;">
+                    <div class="iot-card p-4 flex-grow-1" style="max-width: 820px; width: 100%;">
+                        <h5 class="text-warning fw-bold mb-3">🎬 Mis Demos y Editor de Secuencias</h5>
+                        <div id="misDemosContainer"></div>
+                    </div>
+
+                    <aside class="sidebar-right">
+                        <div class="panel glass-panel">
+                            <h3>ÚLTIMO MOVIMIENTO</h3>
+                            <div class="last-move-display" id="last-move-demos">
+                                <span class="cmd-text">ESPERANDO...</span>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+
+                <!-- VISTA 3 (INVITADO): CATÁLOGO DE MODELOS -->
+                <div id="view-catalogo-inv" style="display: none;">
+                    <div class="iot-card p-4 mx-auto" style="max-width: 860px;">
+                        <h5 class="text-warning fw-bold mb-3">📋 Catálogo de Modelos Comerciales</h5>
+                        <div id="guestCatalogoGrid" class="row g-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 3. PANEL EXCLUSIVO DE ADMINISTRACIÓN -->
+        <!-- ========================================== -->
+        <section id="view-admin-panel" class="container" style="display:none; max-width: 1200px;">
+            <div class="iot-card p-4 mb-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h2 class="h4 text-light fw-bold mb-1">⚙️ Panel de Administración IoT</h2>
+                        <p class="small text-secondary mb-0">Gestión integral de modelos comerciales, inventario de unidades físicas, demos y auditoría.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="btnNuevoModelo" class="btn btn-warning fw-bold text-dark">+ Nuevo Modelo</button>
+                        <button type="button" id="btnRegistrarUnidad" class="btn btn-success fw-bold">➕ Registrar Unidad</button>
+                    </div>
+                </div>
+
+                <!-- Métricas reales desde RDS -->
+                <div id="adminMetricsBar" class="row g-2 mt-3"></div>
+            </div>
+
+            <!-- 3 Pestañas exactas de Administración -->
+            <ul class="nav nav-tabs admin-tabs border-0 mb-0" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminTabInventario" type="button">🚜 Inventario de Unidades</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminTabModelos" type="button">📦 Modelos Comerciales</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminTabAuditoria" type="button">🛡️ Bitácora de Auditoría</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- PESTAÑA 1: INVENTARIO DE UNIDADES -->
+                <div class="tab-pane fade show active" id="adminTabInventario">
+                    <div class="iot-card">
+                        <div class="iot-card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-info">📋 Unidades Físicas Registradas</span>
+                            <button type="button" id="btnRefreshInv" class="btn btn-sm btn-outline-secondary">🔄</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-iot align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Unidad / Modelo</th>
+                                        <th>N° Serie</th>
+                                        <th>Estado Comercial</th>
+                                        <th>Propietario Asignado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyInventario"></tbody>
+                            </table>
                         </div>
                     </div>
-                </aside>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- VISTA 2: HISTORIAL EN VIVO -->
-        <!-- ========================================== -->
-        <div id="view-historial"
-            style="display: none; width: 100%; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap;">
-
-            <!-- Historial (Centro) -->
-            <div class="sidebar" style="width: 100%; max-width: 600px;">
-                <div class="panel" style="height: 60vh;">
-                    <h3 style="text-align: center;">HISTORIAL DE OPERACIONES</h3>
-                    <ul id="historyList" style="overflow-y: auto; height: 85%; padding-right: 10px;"></ul>
                 </div>
-            </div>
 
-            <!-- Panel Último Movimiento (DERECHA) -->
-            <aside class="sidebar-right">
-                <div class="panel glass-panel">
-                    <h3>ÚLTIMO MOVIMIENTO</h3>
-                    <div class="last-move-display" id="last-move-history">
-                        <span class="cmd-text">ESPERANDO...</span>
+                <!-- PESTAÑA 2: MODELOS COMERCIALES -->
+                <div class="tab-pane fade" id="adminTabModelos">
+                    <div class="iot-card">
+                        <div class="iot-card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-warning">📦 Catálogo de Modelos Comerciales</span>
+                            <button type="button" id="btnRefreshMod" class="btn btn-sm btn-outline-secondary">🔄</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-iot align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre del Modelo</th>
+                                        <th>Descripción</th>
+                                        <th>Especificaciones</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyModelos"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </aside>
 
-        </div>
-
-        <!-- ========================================== -->
-        <!-- VISTA 3: ADMINISTRACIÓN -->
-        <!-- ========================================== -->
-        <div id="view-admin"
-            style="display: none; width: 100%; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap;">
-
-            <!-- Panel Central de Admin -->
-            <div class="sidebar" style="width: 100%; max-width: 600px;">
-                <div class="panel" style="height: 60vh; padding: 20px; overflow-y: auto;">
-                    <h3 style="text-align: center; margin-bottom: 20px;">GESTIÓN DE DEMOS</h3>
-
-                    <!-- Formulario rápido para crear -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-                        <input type="text" id="inputNuevaDemo" class="demo-select"
-                            placeholder="Nombre de la nueva demo..." style="flex-grow: 1;">
-                        <button class="btn btn-play" id="btn-crear-demo" style="width: auto;">➕ CREAR</button>
+                <!-- PESTAÑA 3: BITÁCORA DE AUDITORÍA -->
+                <div class="tab-pane fade" id="adminTabAuditoria">
+                    <div class="iot-card">
+                        <div class="iot-card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-success">🛡️ Registro de Auditoría y Seguridad</span>
+                            <button type="button" id="btnRefreshAud" class="btn btn-sm btn-outline-secondary">🔄</button>
+                        </div>
+                        <div class="table-responsive" style="max-height: 55vh;">
+                            <table class="table table-sm table-hover table-iot align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Usuario</th>
+                                        <th>Acción</th>
+                                        <th>Detalles</th>
+                                        <th>Fecha y Hora</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyAuditoria"></tbody>
+                            </table>
+                        </div>
                     </div>
-
-                    <!-- Lista de Demos -->
-                    <ul id="adminDemosList"
-                        style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-                        <!-- Aquí se inyectarán las demos con JS -->
-                    </ul>
                 </div>
             </div>
-
-            <!-- Panel Último Movimiento (DERECHA - Liquid Glass) -->
-            <aside class="sidebar-right">
-                <div class="panel glass-panel">
-                    <h3>ÚLTIMO MOVIMIENTO</h3>
-                    <div class="last-move-display" id="last-move-admin">
-                        <span class="cmd-text">ESPERANDO...</span>
-                    </div>
-                </div>
-            </aside>
-
-        </div>
-
+        </section>
     </main>
 
-    <footer class="bottom-footer">Desarrollado por Silva Barriga Erick Brachiel · 2026</footer>
+    <footer class="bottom-footer mt-auto">Ingeniería en Sistemas Computacionales | Desarrollado por Silva Barriga Erick Brachiel · 2026</footer>
 
+    <!-- ========================================== -->
+    <!-- MODALES DE ADMINISTRACIÓN -->
+    <!-- ========================================== -->
+
+    <!-- Modal Nuevo / Editar Modelo -->
+    <div class="modal fade" id="modalModelo" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="formModelo" class="modal-content iot-modal">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning" id="modeloModalTitle">Nuevo Modelo Comercial</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modeloIdInput">
+                    <div class="mb-2"><label class="form-label small">Nombre del modelo</label><input type="text" id="modeloNombreInput" class="form-control" required></div>
+                    <div class="mb-2"><label class="form-label small">Descripción</label><input type="text" id="modeloDescInput" class="form-control"></div>
+                    <div class="mb-2"><label class="form-label small">Especificaciones</label><input type="text" id="modeloSpecsInput" class="form-control" placeholder="Ej. ESP8266, 13 Canales, Optoacopladores"></div>
+                    <div class="mb-2"><label class="form-label small">Microcontrolador base</label><input type="text" id="modeloMcuInput" class="form-control" value="ESP8266"></div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark">Guardar Modelo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Registrar Nueva Unidad -->
+    <div class="modal fade" id="modalNuevaUnidad" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="formNuevaUnidad" class="modal-content iot-modal">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-success">Registrar Nueva Unidad Física</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2"><label class="form-label small">Nombre de la unidad</label><input type="text" id="newUnidadNombre" class="form-control" required></div>
+                    <div class="mb-2"><label class="form-label small">Modelo comercial</label><select id="newUnidadModelo" class="form-select" required></select></div>
+                    <div class="mb-2"><label class="form-label small">Número de serie único</label><input type="text" id="newUnidadSerie" class="form-control" placeholder="Ej. EXC-IOT-2026-007" required></div>
+                    <div class="mb-2"><label class="form-label small">Descripción</label><input type="text" id="newUnidadDesc" class="form-control"></div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6"><label class="form-label small">Microcontrolador</label><input type="text" id="newUnidadMcu" class="form-control" value="ESP8266"></div>
+                        <div class="col-6">
+                            <label class="form-label small">Estado comercial</label>
+                            <select id="newUnidadEstado" class="form-select">
+                                <option value="DISPONIBLE">DISPONIBLE</option>
+                                <option value="EXHIBICION">EXHIBICION</option>
+                                <option value="VENDIDO">VENDIDO</option>
+                                <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-2"><label class="form-label small">Propietario inicial (opcional)</label><select id="newUnidadPropietario" class="form-select"></select></div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success fw-bold">Registrar Unidad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Acción 1: Cambiar Dueño -->
+    <div class="modal fade" id="modalCambiarDueno" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="formCambiarDueno" class="modal-content iot-modal">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info">👤 Asignar / Cambiar Propietario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ownerUnidadId">
+                    <p class="small text-warning fw-bold" id="ownerUnidadLabel"></p>
+                    <div class="mb-3"><label class="form-label small">Nuevo propietario</label><select id="ownerSelectUsuario" class="form-select"></select></div>
+                    <div class="mb-2">
+                        <label class="form-label small">Estado comercial</label>
+                        <select id="ownerSelectEstado" class="form-select">
+                            <option value="VENDIDO">VENDIDO</option>
+                            <option value="DISPONIBLE">DISPONIBLE</option>
+                            <option value="EXHIBICION">EXHIBICION</option>
+                            <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info fw-bold text-dark">Guardar Dueño</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Acción 2: Cambiar Estado Comercial -->
+    <div class="modal fade" id="modalCambiarEstado" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="formCambiarEstado" class="modal-content iot-modal">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning">🔄 Cambiar Estado Comercial</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="estadoUnidadId">
+                    <p class="small text-light fw-bold" id="estadoUnidadLabel"></p>
+                    <select id="estadoSelectNuevo" class="form-select">
+                        <option value="DISPONIBLE">DISPONIBLE</option>
+                        <option value="VENDIDO">VENDIDO</option>
+                        <option value="EXHIBICION">EXHIBICION (Habilita Modo Invitado)</option>
+                        <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                    </select>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark">Actualizar Estado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Acción 3: Editar TODO (Datos + Comandos + Demos/Pasos) -->
+    <div class="modal fade" id="modalEditarUnidad" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content iot-modal">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning" id="editUnidadTitle">Editar Unidad</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" id="editUnitTabs" role="tablist">
+                        <li class="nav-item"><button class="nav-link active text-warning" data-bs-toggle="tab" data-bs-target="#tabEditGeneral" type="button">📋 Datos Generales</button></li>
+                        <li class="nav-item"><button class="nav-link text-warning" data-bs-toggle="tab" data-bs-target="#tabEditComandos" type="button">🎛️ Comandos</button></li>
+                        <li class="nav-item"><button class="nav-link text-warning" data-bs-toggle="tab" data-bs-target="#tabEditDemos" type="button">🎬 Demos y Pasos</button></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Tab 1: Datos Generales -->
+                        <div class="tab-pane fade show active" id="tabEditGeneral">
+                            <form id="formEditarUnidad">
+                                <input type="hidden" id="editUnidadId">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-6"><label class="form-label small">Nombre</label><input type="text" id="editUnidadNombre" class="form-control" required></div>
+                                    <div class="col-md-6"><label class="form-label small">Número de Serie</label><input type="text" id="editUnidadSerie" class="form-control" required></div>
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-6"><label class="form-label small">Modelo Comercial</label><select id="editUnidadModelo" class="form-select"></select></div>
+                                    <div class="col-md-6"><label class="form-label small">Microcontrolador</label><input type="text" id="editUnidadMcu" class="form-control"></div>
+                                </div>
+                                <div class="mb-2"><label class="form-label small">Descripción</label><input type="text" id="editUnidadDesc" class="form-control"></div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Estado Comercial</label>
+                                        <select id="editUnidadEstado" class="form-select">
+                                            <option value="DISPONIBLE">DISPONIBLE</option>
+                                            <option value="VENDIDO">VENDIDO</option>
+                                            <option value="EXHIBICION">EXHIBICION</option>
+                                            <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6"><label class="form-label small">Propietario Asignado</label><select id="editUnidadPropietario" class="form-select"></select></div>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="editUnidadActivo">
+                                    <label class="form-check-label small" for="editUnidadActivo">Unidad activa en el sistema</label>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-warning fw-bold text-dark">💾 Guardar Datos Generales</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tab 2: Comandos -->
+                        <div class="tab-pane fade" id="tabEditComandos">
+                            <div id="editUnidadComandosContainer"></div>
+                        </div>
+
+                        <!-- Tab 3: Demos y Movimientos -->
+                        <div class="tab-pane fade" id="tabEditDemos">
+                            <div id="editUnidadDemosContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="assets/main.js"></script>
 </body>
 
