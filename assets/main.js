@@ -197,6 +197,15 @@ async function enviarComando(cmdCode) {
     cargarHistorialRDS(activeVehicleId);
 }
 
+function formatearFechaMX(fechaStr) {
+    if (!fechaStr) return '';
+    const limpia = String(fechaStr).trim().replace(' ', 'T');
+    const isoUtc = /[zZ]|[+-]\d{2}:\d{2}$/.test(limpia) ? limpia : `${limpia}Z`;
+    return new Date(isoUtc).toLocaleString('es-MX', {
+        timeZone: 'America/Mexico_City',
+    });
+}
+
 async function cargarHistorialRDS(idVehiculo) {
     const tbody = document.getElementById('historyTableBody');
     if (!tbody || !idVehiculo) return;
@@ -212,14 +221,7 @@ async function cargarHistorialRDS(idVehiculo) {
     }
     tbody.innerHTML = items
         .map((h) => {
-            function formatearFechaMX(fechaStr) {
-                if (!fechaStr) return '';
-                const limpia = String(fechaStr).trim().replace(' ', 'T');
-                const isoUtc = /[zZ]|[+-]\d{2}:\d{2}$/.test(limpia) ? limpia : `${limpia}Z`;
-                return new Date(isoUtc).toLocaleString('es-MX', {
-                    timeZone: 'America/Mexico_City',
-                });
-            }
+            const fecha = formatearFechaMX(h.fecha_hora);
             return `
             <tr>
                 <td class="small text-secondary">${escapeHtml(fecha)}</td>
