@@ -193,32 +193,37 @@ main.container-fluid {
 #userControlContent {
     align-items: center !important;
     justify-content: center !important;
-    gap: 20px !important;
+    gap: 28px !important;
 }
 
-/* Panel izquierdo (Catálogo de Demos) sin cortar select ni botones */
+/* Ocultar cuadro de Último Movimiento en la vista de control sin romper JS */
+#userControlContent .sidebar-right {
+    display: none !important;
+}
+
+/* Panel izquierdo (Catálogo de Demos) */
 #userControlContent .sidebar {
-    width: 285px !important;
-    flex: 0 0 285px !important;
+    width: 300px !important;
+    flex: 0 0 300px !important;
 }
 
 .demo-select {
     width: 100% !important;
-    font-size: 0.88rem !important;
-    padding: 8px 10px !important;
+    font-size: 0.9rem !important;
+    padding: 9px 10px !important;
 }
 
 .demo-controls {
     display: flex !important;
-    gap: 8px !important;
+    gap: 10px !important;
     width: 100% !important;
 }
 
 .demo-controls .btn {
     flex: 1 1 0 !important;
     white-space: nowrap !important;
-    padding: 9px 6px !important;
-    font-size: 0.78rem !important;
+    padding: 10px 8px !important;
+    font-size: 0.82rem !important;
     font-weight: 700 !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -226,13 +231,7 @@ main.container-fluid {
     gap: 5px !important;
 }
 
-/* Panel derecho (Último Movimiento) */
-#userControlContent .sidebar-right {
-    width: 255px !important;
-    flex: 0 0 255px !important;
-}
-
-/* Control central proporcionado */
+/* Control central más amplio */
 .main-control-area {
     display: flex;
     justify-content: center;
@@ -240,15 +239,15 @@ main.container-fluid {
 }
 
 .remote-body {
-    width: 630px !important;
+    width: 740px !important;
     max-width: 100% !important;
-    padding: 14px 22px 16px !important;
+    padding: 16px 28px 18px !important;
     margin: 0 auto !important;
 }
 
 .top-plate {
-    padding: 6px 24px !important;
-    font-size: 1.05rem !important;
+    padding: 7px 28px !important;
+    font-size: 1.12rem !important;
     margin-bottom: 8px !important;
 }
 
@@ -257,7 +256,7 @@ main.container-fluid {
     background: rgba(18, 22, 28, 0.92);
     border: 1px solid rgba(255, 255, 255, 0.25);
     display: inline-block;
-    padding: 3px 14px;
+    padding: 4px 16px;
     font-weight: 600;
 }
 
@@ -269,38 +268,37 @@ main.container-fluid {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    gap: 16px !important;
+    gap: 20px !important;
 }
 
-/* Joysticks con espacio suficiente para todas las letras */
+/* Joysticks más grandes y cómodos */
 .joy-label {
-    font-size: 0.8rem !important;
-    padding: 4px 12px !important;
+    font-size: 0.86rem !important;
+    padding: 5px 14px !important;
     margin-bottom: 10px !important;
     white-space: nowrap !important;
 }
 
 .d-pad-ring {
     position: relative !important;
-    width: 186px !important;
-    height: 186px !important;
+    width: 206px !important;
+    height: 206px !important;
     overflow: hidden !important;
 }
 
 .joy-stick {
-    width: 60px !important;
-    height: 60px !important;
+    width: 68px !important;
+    height: 68px !important;
     z-index: 3;
 }
 
-/* Etiquetas de dirección claras y sin encimarse */
 .dir-hint {
     position: absolute !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 0.7rem !important;
+    font-size: 0.76rem !important;
     line-height: 1.15 !important;
     color: #e5e8ec !important;
     font-weight: 600 !important;
@@ -310,54 +308,54 @@ main.container-fluid {
 
 .dir-hint b {
     color: #f39c12 !important;
-    font-size: 0.78rem !important;
+    font-size: 0.84rem !important;
 }
 
 .dir-hint.up {
-    top: 10px !important;
+    top: 12px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
 }
 
 .dir-hint.down {
-    bottom: 10px !important;
+    bottom: 12px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
 }
 
 .dir-hint.left {
-    left: 11px !important;
+    left: 13px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
 }
 
 .dir-hint.right {
-    right: 11px !important;
+    right: 13px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
 }
 
-/* Botones centrales */
+/* Botones centrales más grandes */
 .center-panel {
-    min-width: 132px !important;
+    min-width: 155px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 14px !important;
 }
 
 .btn-center {
     width: 100% !important;
     white-space: nowrap !important;
-    padding: 10px 14px !important;
-    font-size: 0.85rem !important;
+    padding: 11px 16px !important;
+    font-size: 0.9rem !important;
 }
 
 .bottom-plate {
-    margin-top: 14px !important;
+    margin-top: 16px !important;
 }
 
 #btn-stop {
-    padding: 10px 24px !important;
-    font-size: 0.92rem !important;
+    padding: 11px 28px !important;
+    font-size: 0.96rem !important;
     white-space: nowrap !important;
 }
