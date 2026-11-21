@@ -168,3 +168,101 @@ body {
     color: #aeb6bf;
     text-transform: uppercase;
 }
+
+/* ==========================================
+   AJUSTE COMPACTO Y CENTRADO DEL CONTROL
+   ========================================== */
+main.container-fluid {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+}
+
+#view-user-app > .container-fluid {
+    max-width: 1420px !important;
+}
+
+#vehicleSelectorWrap {
+    padding: 8px 14px !important;
+    margin-bottom: 10px !important;
+}
+
+#view-user-app .mb-4 {
+    margin-bottom: 14px !important;
+}
+
+#userControlContent {
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 16px !important;
+}
+
+#userControlContent .sidebar,
+#userControlContent .sidebar-right {
+    width: 245px !important;
+    flex: 0 0 auto;
+}
+
+.main-control-area {
+    display: flex;
+    justify-content: center;
+    flex: 0 1 auto;
+}
+
+.remote-body {
+    width: 100% !important;
+    max-width: 560px !important;
+    padding: 14px 20px !important;
+    margin: 0 auto !important;
+}
+
+.top-plate {
+    padding: 6px 20px !important;
+    font-size: 1rem !important;
+    margin-bottom: 8px !important;
+}
+
+.control-grid {
+    gap: 14px !important;
+    align-items: center !important;
+}
+
+.d-pad-ring {
+    width: 155px !important;
+    height: 155px !important;
+}
+
+.joy-stick {
+    width: 56px !important;
+    height: 56px !important;
+}
+
+.joy-label {
+    font-size: 0.78rem !important;
+    padding: 4px 10px !important;
+    margin-bottom: 8px !important;
+}
+
+.center-panel {
+    gap: 10px !important;
+}
+
+.btn-center {
+    padding: 8px 12px !important;
+    font-size: 0.82rem !important;
+}
+
+.bottom-plate {
+    margin-top: 12px !important;
+}
+
+#btn-stop {
+    padding: 8px 18px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Contraste legible para el estado sobre el control naranja */
+.remote-body .ack-pill {
+    background: rgba(18, 22, 28, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-block;
+}

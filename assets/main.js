@@ -212,7 +212,14 @@ async function cargarHistorialRDS(idVehiculo) {
     }
     tbody.innerHTML = items
         .map((h) => {
-            const fecha = h.fecha_hora ? new Date(h.fecha_hora).toLocaleString('es-MX') : '';
+            function formatearFechaMX(fechaStr) {
+                if (!fechaStr) return '';
+                const limpia = String(fechaStr).trim().replace(' ', 'T');
+                const isoUtc = /[zZ]|[+-]\d{2}:\d{2}$/.test(limpia) ? limpia : `${limpia}Z`;
+                return new Date(isoUtc).toLocaleString('es-MX', {
+                    timeZone: 'America/Mexico_City',
+                });
+            }
             return `
             <tr>
                 <td class="small text-secondary">${escapeHtml(fecha)}</td>

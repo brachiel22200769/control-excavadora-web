@@ -152,6 +152,15 @@ function renderTablaModelos() {
     });
 }
 
+function formatearFechaMX(fechaStr) {
+    if (!fechaStr) return '';
+    const limpia = String(fechaStr).trim().replace(' ', 'T');
+    const isoUtc = /[zZ]|[+-]\d{2}:\d{2}$/.test(limpia) ? limpia : `${limpia}Z`;
+    return new Date(isoUtc).toLocaleString('es-MX', {
+        timeZone: 'America/Mexico_City',
+    });
+}
+
 async function cargarAuditoria() {
     const tbody = document.getElementById('tbodyAuditoria');
     if (!tbody) return;
@@ -167,7 +176,7 @@ async function cargarAuditoria() {
     }
     tbody.innerHTML = rows
         .map((r) => {
-            const fecha = r.fecha_hora ? new Date(r.fecha_hora).toLocaleString('es-MX') : '';
+            const fecha = formatearFechaMX(r.fecha_hora);
             return `
             <tr>
                 <td>${r.id_auditoria}</td>
