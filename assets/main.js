@@ -686,3 +686,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     mostrarSoloSeccion('view-auth');
     cargarCatalogoEn('publicCatalogoGrid');
 });
+
+
+// Toggle visual fijo en amarillo para LUCES, SONIDO y AUX
+document.querySelectorAll('.center-panel .btn-center').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        btn.classList.toggle('btn-toggle-on');
+    });
+});
