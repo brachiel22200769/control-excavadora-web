@@ -362,9 +362,10 @@ main.container-fluid {
 
 /* Estado encendido fijo (toggle) para LUCES, SONIDO y AUX */
 .center-panel .btn-center.btn-toggle-on {
-    background: #f39c12 !important;
-    color: #11161d !important;
-    border-color: #ffd166 !important;
-    box-shadow: 0 0 14px rgba(243, 156, 18, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    background: linear-gradient(180deg, #ffe066 0%, #f5b700 100%) !important;
+    color: #14181f !important;
+    text-shadow: none !important;
+    border: 2px solid #1b2028 !important;
+    box-shadow: 0 0 12px rgba(255, 224, 102, 0.85), inset 0 2px 3px rgba(255, 255, 255, 0.65) !important;
     font-weight: 800 !important;
 }
