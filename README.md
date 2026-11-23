@@ -1,99 +1,86 @@
-🚜 Excavadora IoT - Sistema de Teleoperación Completo
-Este repositorio contiene el ecosistema completo (Frontend y Backend) para el control en tiempo real de un vehículo IoT (Excavadora controlada mediante un microcontrolador ESP8266 y registros de desplazamiento 74HC595). El proyecto integra una interfaz web responsiva con una arquitectura de microservicios en la nube utilizando FastAPI, WebSockets y una base de datos relacional.
+# 🚜 Excavadora IoT - Interfaz Web de Teleoperación y Administración
 
-🌟 Ampliación 4.2 - Mejoras de Interfaz y Lógica en Tiempo Real
-Esta versión integra mejoras significativas en la experiencia de usuario (UI/UX) y la eficiencia del servidor:
+Frontend web responsivo para el control en tiempo real, gestión de secuencias autónomas (**Demos**) y administración comercial de vehículos IoT basados en **ESP8266 + 74HC595**.
 
-Efecto Liquid Glass: Paneles laterales de cristal translúcido para indicadores de estado e interfaces de catálogo.
+🌐 **Despliegue en producción (GitHub Pages):**
+`https://brachiel22200769.github.io/control-excavadora-web/`
 
-Animación Fantasma (Ghosting): Los joysticks virtuales y botones del frontend reaccionan físicamente a los comandos recibidos vía WebSocket durante la ejecución de rutinas automáticas (Demos).
+---
 
-Filtro de Historial Inteligente: Lógica implementada en db_service.py y main.js para discriminar eventos inactivos (Comando 13 - Detenido), optimizando la capacidad de la tabla visual a 10 movimientos reales puros.
+## ✨ Funcionalidades Principales
 
-Refactorización de Assets: Aislamiento total de estilos, lógica y variables de entorno para un despliegue limpio y mantenible.
+* **Autenticación JWT y Control por Roles:**
+  * **Inicio de sesión y registro** para usuarios propietarios (`USUARIO`).
+  * **Modo Invitado** con reserva exclusiva de 5 minutos, cronómetro en vivo y acceso directo a la unidad en exhibición con su **Demo de Fábrica**.
+  * **Panel de Administración (`ADMIN`)** con métricas en tiempo real, gestión de inventario de unidades, catálogo de modelos comerciales, asignación de propietarios y bitácora de auditoría.
+* **Control de Teleoperación en Tiempo Real:**
+  * Joysticks virtuales para **Orugas** (`Fwd`, `Rev`, `Izq`, `Der`) y **Cabina / Brazo** (`Sube`, `Baja`, `C.Izq`, `C.Der`) con botón de paro de emergencia **`DETENER TODO (13)`**.
+  * Botones centrales **LUCES**, **SONIDO** y **AUX** con estado visual tipo *toggle* fijo en amarillo hasta volver a presionarlos.
+  * **Animación Fantasma (Ghosting):** Los controles reaccionan visualmente a los eventos recibidos por WebSocket durante la ejecución de rutinas automáticas.
+* **Editor de Secuencias ("Mis Demos"):** Creación, edición y eliminación de demos personalizadas paso a paso (comando, orden, duración y pausa en milisegundos).
+* **Historial en Vivo con Hora Local:** Muestra los últimos 10 movimientos persistidos en Amazon RDS, convirtiendo automáticamente las marcas de tiempo UTC del servidor a la zona horaria **`America/Mexico_City`**.
+* **UX Adaptativa:** Interfaz con efecto *Liquid Glass*, scroll habilitado en todas las vistas (Login, Admin, Historial y Mis Demos) y vista fija sin scroll en la pantalla de Control para una operación cómoda.
+* **Indicadores de Salud (LEDs):** Monitoreo independiente de **API**, **RDS** y **WSS** (más el badge de estado de conexión del **ESP8266** físico).
 
-🏗️ Arquitectura del Proyecto y Mapa de Módulos
-El sistema se divide en dos componentes principales estructurados bajo un modelo de separación de responsabilidades:
+---
 
-💻 Frontend: Control Web
-Estructura organizada para despliegue estático o mediante GitHub Pages.
+## 🗂️ Estructura del Proyecto
 
-Plaintext
-/control-excavadora-web
- ├── 📁 IMG/
- │    └── Fondo.jpg           # Recursos gráficos (Background optimizado)
- ├── 📁 assets/
- │    ├── style.css           # Estilos visuales, Liquid Glass y diseño responsivo
- │    ├── main.js             # Lógica Core: UI, WebSockets, Historial y UI Ghosting
- │    ├── api.js              # Cliente REST (Fetch/Async-Await)
- │    └── config.js           # Contratos de URLs para Ngrok y AWS
- ├── index.html               # Semántica y layout principal
- └── favicon.ico
-⚙️ Backend: API REST & WebSocket
-Estructura persistente en Python (FastAPI).
+```text
+control_excavadora_web/
+├── IMG/
+│   └── Fondo.jpg            # Imagen de fondo principal
+├── assets/
+│   ├── config.js            # Configuración centralizada de host API (HTTPS) y WebSocket (WSS)
+│   ├── api.js               # Cliente HTTP REST con inyección automática de token JWT
+│   ├── main.js              # Controlador principal: Auth, roles, WebSocket, teleoperación y hora MX
+│   ├── demoEditor.js        # CRUD completo de Demos y pasos de secuencia
+│   ├── admin.js             # Lógica del Panel de Administración (Inventario, Modelos y Bitácora)
+│   ├── style.css            # Estilos base del control y componentes Liquid Glass
+│   └── admin-theme.css      # Tema oscuro, layout proporcional del control, toggles y scroll adaptativo
+├── index.html               # Aplicación SPA multi-vista (Login, Operador/Invitado y Admin)
+├── .nojekyll                # Desactiva procesamiento Jekyll en GitHub Pages
+├── favicon.ico
+└── README.md
+```
 
-Plaintext
-/websocket_iot/app
- ├── main.py                  # Endpoints REST, WebSockets y Middlewares
- └── 📁 services/
-      └── db_service.py       # Capa de base de datos, filtros de historial y Stored Procedures
-☁️ Contratos de Infraestructura (AWS & Redes)
-El proyecto requiere una cadena de servicios activa para garantizar la telemetría bidireccional y la persistencia de datos:
+---
 
-Amazon EC2 (Windows Server 2025): Servidor host para la API ASGI de Python. Mantiene la lógica del negocio en operación 24/7.
+## ⚙️ Configuración y Despliegue
 
-Amazon RDS (MySQL): Motor de base de datos relacional para gestionar la tabla vehiculo_iot, incluyendo el historial de transacciones y los catálogos de rutinas (Demos).
+1. **Apuntar al backend activo** editando `assets/config.js`:
+   ```javascript
+   const NGROK_HOST = "mutual-spearhead-factoid.ngrok-free.dev";
 
-Ngrok Tunnels: Proveedor de túneles inversos para exponer de forma pública y segura (HTTPS / WSS) los puertos del servidor EC2, evadiendo restricciones de NAT corporativas o de proveedores de internet.
+   export const CONFIG = {
+       API_BASE: `https://${NGROK_HOST}/api`,
+       WS_BASE: `wss://${NGROK_HOST}`,
+   };
+   ```
+2. **Pruebas locales:** Abrir `index.html` con **Live Server** en VS Code.
+3. **Publicación en GitHub Pages:**
+   ```powershell
+   git add .
+   git commit -m "Actualización de interfaz de control IoT"
+   git push origin main
+   ```
 
-🚀 Pasos de Ejecución
-1. Inicialización de Backend (AWS EC2)
-Iniciar la instancia de base de datos en AWS RDS.
+---
 
-Acceder al servidor EC2 y activar el entorno virtual (.venv).
+## ✅ Flujo de Comprobación y Testing
 
-Ejecutar el servidor ASGI:
+1. **Carga inicial (Login):**
+   * Los indicadores **API** y **RDS** deben encender en verde mediante `GET /api/health` y el catálogo público de modelos debe cargarse desde RDS.
+2. **Panel de Administración (`ADMIN`):**
+   * Al iniciar sesión como administrador, se muestran las pestañas **Inventario**, **Modelos Comerciales** y **Bitácora de Auditoría** con fechas en hora local de México. *(El LED `WSS` permanece en amarillo/espera porque el administrador opera solo por API REST).*
+3. **Teleoperación (`USUARIO`):**
+   * Al iniciar sesión como propietario, el LED **WSS** cambia a verde al abrir `/ws/vehiculos/{id}?token=<JWT>`.
+   * Al conectar el ESP8266 físico al endpoint `/ws/device/{id}?key=...`, el indicador superior cambia a **`ESP8266: Conectado`**.
+   * Cada comando manual se registra en **Historial en Vivo** con la hora local y en **Mis Demos** se pueden gestionar rutinas personalizadas.
+4. **Modo Invitado (`INVITADO`):**
+   * Reserva la unidad en `EXHIBICION` por 5 minutos, muestra el cronómetro regresivo y permite operar manualmente o ejecutar la **`Demo de Fábrica`**.
+   * Al presionar **DETENER TODO (13)** o **CANCELAR**, la rutina se interrumpe de inmediato enviando `status: 13`.
 
-Bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-Levantar el túnel seguro de Ngrok apuntando al puerto local:
+---
 
-Bash
-ngrok http 8000
-2. Configuración de Frontend
-Copiar las URLs generadas por Ngrok (HTTPS y WSS).
-
-Actualizar los contratos en el archivo assets/config.js:
-
-JavaScript
-export const CONFIG = {
-    API_BASE: "https://<tu-url-ngrok>.ngrok-free.dev/api",
-    WS_URL: "wss://<tu-url-ngrok>.ngrok-free.dev/ws",
-    VEHICULO_ID: 1
-};
-Lanzar el index.html mediante un servidor local (Live Server en VS Code) o desplegar el repositorio en GitHub Pages.
-
-✅ Criterios de Comprobación y Testing
-Fase 1: Carga Inicial (Initial Load)
-Health Check de LEDs: Al cargar la página, los indicadores superiores (WSS, API, RDS) deben pasar de color ámbar a verde intenso.
-
-Sincronización de Último Estado: El panel de Liquid Glass derecho ("ÚLTIMO MOVIMIENTO") debe iluminarse con el comando registrado previamente en la base de datos (Ej. DETENIDO).
-
-Catálogo Dinámico: El menú desplegable de "CATÁLOGO DE DEMOS" debe rellenarse automáticamente consultando los registros de RDS a través de la API.
-
-Fase 2: Actualización en Tiempo Real (Real-Time Telemetry)
-Filtrado de Historial: Al operar los joysticks libremente, la lista de "HISTORIAL DE OPERACIONES" debe actualizarse al instante mostrando la hora y comando exacto, manteniendo un máximo de 10 registros limpios (omitiendo por completo el comando 13 "DETENIDO").
-
-Animación Fantasma (Ejecución de Demos): Al seleccionar y dar "EJECUTAR" a una demo, el usuario debe soltar el ratón y observar cómo:
-
-Los joysticks virtuales se mueven físicamente en la pantalla.
-
-Los botones centrales destellan en amarillo según la secuencia.
-
-El panel de Liquid Glass refleja el cambio de comandos a alta velocidad.
-
-El historial inyecta los nuevos registros con la etiqueta y color especial [DEMO].
-
-Corte de Emergencia: Al presionar "DETENER TODO (13)" o "CANCELAR", la secuencia autónoma debe abortarse de inmediato, el historial dejará de registrar eventos de Demo, y el Liquid Glass marcará DETENIDO en color rojo.
-
-Desarrollado por Erick Brachiel Silva Barriga - Instituto Tecnológico de Pachuca
+Desarrollado por **Erick Brachiel Silva Barriga** — Ingeniería en Sistemas Computacionales, Instituto Tecnológico de Pachuca (2026).
