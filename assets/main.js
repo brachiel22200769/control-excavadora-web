@@ -694,3 +694,29 @@ document.querySelectorAll('.center-panel .btn-center').forEach((btn) => {
         btn.classList.toggle('btn-toggle-on');
     });
 });
+
+// Bloquea el scroll solo cuando la pestaña de Control está visible
+function actualizarScrollVista() {
+    const appUsuario = document.getElementById('view-user-app');
+    const tabControl = document.getElementById('userControlContent');
+    const estaEnControl =
+        appUsuario &&
+        tabControl &&
+        !appUsuario.classList.contains('d-none') &&
+        !tabControl.classList.contains('d-none') &&
+        tabControl.offsetParent !== null;
+
+    document.body.classList.toggle('vista-control-fija', Boolean(estaEnControl));
+    if (estaEnControl) {
+        window.scrollTo(0, 0);
+    }
+}
+
+const scrollObserver = new MutationObserver(actualizarScrollVista);
+['view-user-app', 'userControlContent'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+        scrollObserver.observe(el, { attributes: true, attributeFilter: ['class', 'style'] });
+    }
+});
+actualizarScrollVista();

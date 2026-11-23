@@ -369,3 +369,17 @@ main.container-fluid {
     box-shadow: 0 0 12px rgba(255, 224, 102, 0.85), inset 0 2px 3px rgba(255, 255, 255, 0.65) !important;
     font-weight: 800 !important;
 }
+
+/* Scroll habilitado por defecto en todas las vistas */
+html, body {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+/* Bloquear scroll únicamente en la pantalla de Control */
+body.vista-control-fija {
+    height: 100vh !important;
+    overflow: hidden !important;
+}
